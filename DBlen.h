@@ -1,0 +1,10 @@
+#define WLlen 31
+#define IDlen 10
+#define DATElen 13
+#define PKlen 271
+#define MAClen 18
+#define PWDlen 513
+#define NAMElen 30
+#define EMAILlen 50
+#define PHONElen 20
+#define BIRTHlen 7

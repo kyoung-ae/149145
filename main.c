@@ -6,152 +6,7 @@
 #include "BaseDefine.h"
 #include "DBlen.h"
 
-//DBManagement.c ~
-struct WhiteListTable {
-    char whitelist[WLlen];
-    char id[IDlen];
-    char date[DATElen];
-};
-
-struct MACTable {
-    char id[IDlen];
-    char public_key[PKlen];
-    char mac0[MAClen];
-    char mac1[MAClen];
-    char mac2[MAClen];
-};
-
-struct AdminTable {
-    char idp[IDlen];
-    int access;
-    char pwd[PWDlen];
-};
-
-struct InfoTable {
-    char id[IDlen];
-    int access;
-    char name[NAMElen];
-    char birth[BIRTHlen];
-    char email[EMAILlen];
-    char phone[PHONElen];
-    char date[DATElen];
-};
-
-struct InsInfo {
-    char id[IDlen];
-    char pwd[PWDlen];
-    char public_key[PKlen];
-    char mac[MAClen];
-    char name[NAMElen];
-    char birth[BIRTHlen];
-    char email[EMAILlen];
-    char phone[PHONElen];
-    char date[DATElen];
-    int access;
-};
-
-enum Account {
-    Robot, CPS, Root
-};
-
-int selWhitelist(const char sel_wl[WLlen], OUT struct WhiteListTable sel_wt) {
-    char whitelist[WLlen];
-    OUT struct WhiteListTable wt;
-}
-
-int selAdminInfo(const char sel_id[IDlen], const char sel_pwd[PWDlen], OUT struct InfoTable sel_it) {
-    char id[IDlen];
-    char pwd[PWDlen];
-    OUT struct InfoTable it;
-}
-
-int selPublicKey(const char sel_id[], const char sel_pwd[], OUT char sel_pk[]) {
-    char id[IDlen];
-    char pwd[PWDlen];
-    OUT char public_key[PKlen]; // OUT publickey를 반환함
-}
-
-int searchPWD(const char search_id[], const char seearch_pwd[]) {
-    char id[IDlen];
-    char pwd[PWDlen];
-}
-
-int delAdmin(const char del_id[], const char del_pwd[]) {
-    char id[IDlen];
-    char pwd[PWDlen];
-}
-
-int delWhiteList(char del_wl[WLlen]) {
-    char whitelist[WLlen];
-}
-
-int insWhiteListTable(struct WhiteListTable ins_wt) {
-    struct WhiteListTable wt;
-}
-
-int insAdminTable(struct InsInfo ins_at) {
-    struct InsInfo at;
-}
-
-int updateAdmin(struct InsInfo up_a) {
-    struct InsInfo a;
-}
-
-int updateAdminwl(struct WhiteListTable up_a) {
-    struct WhiteListTable wt;
-}
-
-int insMAC(const char insmac_id[IDlen], const char isnmac_mac[MAClen]) {
-    char id[IDlen];
-    char mac[MAClen];
-}
-
-int updateMac(const char upmac_id[IDlen], const char upmac_mac[MAClen]) {
-    char id[IDlen];
-    char mac[MAClen];
-}
-
-int updatePWD(const char uppwd_id[IDlen], const char uppwd_pwd[PWDlen]) {
-    char id[IDlen];
-    char pwd[PWDlen];
-}
-
-int updateAccess(const char upacc_id[IDlen], int upacc_acc) {
-    char id[IDlen];
-    int access;
-}
-
-void sqlString(char str[PKlen]) {
-    int i;
-    char sql_str[PKlen];
-}
-
-int selMenu(int sel_menu) {
-    int i;
-
-    printf("1. WHITELIST DB\n");
-    printf("2. ADMINISTRATOR DB\n");
-    printf("0. EXIT\n");
-    puts("input : ");
-    gets(i);
-
-    return i;
-}
-// ~DBManagement.c
-
-//DBPrintModule.c~
-void printMenu(int pr_menu) {
-    int menu;
-}
-
-void printWhiteListResult(struct WhiteListTable pr_wt) {
-    struct WhiteListTable wt;
-}
-
-void printAdminResult(struct InsInfo pr_i) {
-    struct InsInfo i;
-}
-// ~DBPrintModule.c
+//void printMenu();
 
 static int callback(void *NotUsed, int argc, char **argv, char **azColName) {
     int i;
@@ -163,45 +18,58 @@ static int callback(void *NotUsed, int argc, char **argv, char **azColName) {
     return 0;
 }
 
-int main(int argc, char *argv[]) {
+// DBProgram.c 로 파일명을 바꿔야 함 (DB 확인을 위해 main.c 로 작성한 상태임)
+int main(int argc, char *argv[]) { // int selMenu(int menu) 로 함수명을 바꿔야 함 (DB 확인을 위해 main 함수로 작성한 상태임)
+
+    //int menu;
+    //printMenu(menu);
+
     sqlite3 *db;
-    char *errmsg;
+   	char *errmsg;
     sqlite3_stmt *res;
     int rc;
     char *sql;
     char input_sql[512];
-    char whitelist[30] = { 0, };
-    char id[9] = { 0, };
-    char date[12];
+    char whitelist[WLlen] = { 0, };
+    char id[IDlen] = { 0, };
+    char date[DATElen];
+    char src_white[WLlen] = { 0, }; // 수정할 화이트리스트 ->다른 화이트리스트로 변경됨.
 
     rc = sqlite3_open("WHITELIST.db", &db);
     if(rc != SQLITE_OK) {
-        fprintf(stderr, "Can't open database : %s\n", sqlite3_errmsg(db));
-        return 1;
+        fprintf(stderr, "Can't open WHITELIST DB : %s\n", sqlite3_errmsg(db));
+       	return 1;
     }
-    else {
+   	else {
         fprintf(stderr, "Opened database successfully\n");
     }
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
+    /* table create
     sql = "CREATE TABLE WHITELIST ("\
-            "whitelist TEXT(30) PRIMARY KEY NOT NULL,"\
-            "id TEXT(9) NOT NULL,"\
-            "date TEXT(12));";
-    rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
+        "whitelist TEXT(30) PRIMARY KEY NOT NULL,"\
+        "id TEXT(9) NOT NULL,"\
+        "date TEXT(12));";
+   	rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
     if(rc != SQLITE_OK) {
-        fprintf(stderr, "Can't create table : %s\n", sqlite3_errmsg(db));
-        //return 1;
+       	fprintf(stderr, "Can't create WHITELIST table : %s\n", sqlite3_errmsg(db));
+       	return 1;
     }
     else {
-        fprintf(stderr, "Created table successfully\n");
+       	fprintf(stderr, "Created table successfully\n");
     }
+    */
 
+    system("clear");
+
+    /* records insert
     puts("WHITELIST TABLE's insert\n");
     puts("input whitelist:");
     gets(whitelist);
     puts("input id:");
     gets(id);
+    puts("input date:");
+    gets(date);
 
     fflush(stdin);
     strcpy(input_sql, "insert into WHITELIST values('");
@@ -209,7 +77,6 @@ int main(int argc, char *argv[]) {
     strcat(input_sql, "','");
     strcat(input_sql, id); //id
     strcat(input_sql, "','");
-
     //sql = "select datetimes(strftime('%s', 'now'), 'unixepoch', 'localtime'))"; //time, date
     strcat(input_sql, date); //date
     strcat(input_sql, "');");
@@ -222,7 +89,71 @@ int main(int argc, char *argv[]) {
     else {
         fprintf(stderr, "Print input successfully\n");
     }
+    */
 
+    // 화이트리스트 테이블 확인
+    sql = "select * from WHITELIST";
+    rc = sqlite3_exec(db, sql, callback, 0, &errmsg);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't print schema : %s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+    else {
+        fprintf(stderr, "Print schema successfully\n");
+    }
+
+
+    /*records delete
+    res = "Callback Function Called";
+
+    puts("WHITELIST TABLE's records delete.\n");
+    puts("input whitelist:");
+    gets(whitelist);
+    puts("input id:");
+    gets(id);
+
+    fflush(stdin);
+    strcpy(input_sql, "DELETE from WHITELIST where whitelist = '");
+    strcat(input_sql, whitelist); //whitelist
+    strcat(input_sql, "';");
+    printf("%s\n", input_sql);
+    rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't delete : %s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+    else {
+        fprintf(stderr, "Delete successfully\n");
+    }
+    */
+
+    // records update
+    res = "Callback Function Called";
+
+    puts("WHITELIST TABLE's Update\n");
+    puts("update source whitelist:");
+    gets(src_white);
+    puts("update whitelist:");
+    gets(whitelist);
+
+    fflush(stdin);
+    strcpy(input_sql, "UPDATE WHITELIST SET whitelist = '");
+    strcat(input_sql, whitelist); //whitelist
+    strcat(input_sql, "'");
+    strcat(input_sql, "where whitelist = '");
+    strcat(input_sql, src_white);
+    strcat(input_sql, "';");
+    printf("%s\n", input_sql);
+    rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't Update : %s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+    else {
+        fprintf(stderr, "Update successfully\n");
+    }
+
+    // 화이트리스트 테이블 확인
     sql = "select * from WHITELIST";
     rc = sqlite3_exec(db, sql, callback, 0, &errmsg);
     if(rc != SQLITE_OK) {
@@ -235,5 +166,70 @@ int main(int argc, char *argv[]) {
 
     sqlite3_close(db);
 
-	return 0;
+    return 0;
 }
+
+
+/*	if(menu == 2) {
+    	rc = sqlite3_open("ADMINISTRATOR.db", &db);
+    	if(rc != SQLITE_OK) {
+      		fprintf(stderr, "Can't open ADMINISTRATOR DB : %s\n", sqlite3_errmsg(db));
+        	return 1;
+        }
+   		else {
+       		fprintf(stderr, "Opened database successfully\n");
+    	}
+    	sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+
+    	sql = "CREATE TABLE MAC ("\
+        "id TEXT(9) PRIMARY KEY NOT NULL,"\
+        "public_key TEXT(270),"\
+        "mac0 TEXT(17) NOT NULL,"\
+        "mac1 TEXT(17),"\
+        "mac2 TEXT(17));";
+    	rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
+    	if(rc != SQLITE_OK) {
+        	fprintf(stderr, "Can't create MAC table : %s\n", sqlite3_errmsg(db));
+        	return 1;
+    	}
+    	else {
+        	fprintf(stderr, "Created table successfully\n");
+    	}
+
+    	sql = "CREATE TABLE ADMIN ("\
+        "id TEXT(9) PRIMARY KEY NOT NULL,"\
+        "access INT(1),"\
+        "pwd TEXT(513));";
+    	rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
+    	if(rc != SQLITE_OK) {
+        	fprintf(stderr, "Can't create ADMIN table : %s\n", sqlite3_errmsg(db));
+        	return 1;
+    	}
+    	else {
+        	fprintf(stderr, "Created table successfully\n");
+    	}
+
+    	sql = "CREATE TABLE INFO ("\
+        "id TEXT(9) PRIMARY KEY NOT NULL,"\
+        "access INT(1),"\
+        "name TEXT(30),"\
+        "birth TEXT(6),"\
+        "email TEXT(50),"\
+        "phone TEXT(20),"\
+        "date TEXT(12));";
+    	rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
+    	if(rc != SQLITE_OK) {
+        	fprintf(stderr, "Can't create INFO table : %s\n", sqlite3_errmsg(db));
+        	return 1;
+    	}
+    	else {
+        	fprintf(stderr, "Created table successfully\n");
+    	}
+	}
+*/
+
+/*
+    sqlite3_close(db);
+
+	return 0;
+} */
