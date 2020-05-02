@@ -33,6 +33,9 @@
 		</Compiler>
 		<Unit filename="BaseDefine.h" />
 		<Unit filename="DB.h" />
+		<Unit filename="DBCreate.c">
+			<Option compilerVar="CC" />
+		</Unit>
 		<Unit filename="DBManegement.c">
 			<Option compilerVar="CC" />
 		</Unit>
@@ -42,7 +45,6 @@
 		<Unit filename="DBProgram.c">
 			<Option compilerVar="CC" />
 		</Unit>
-		<Unit filename="DBlen.h" />
 		<Unit filename="main.c">
 			<Option compilerVar="CC" />
 		</Unit>

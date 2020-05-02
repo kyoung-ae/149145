@@ -1,55 +1,9 @@
 #include <stdio.h>
 #include <sqlite3.h>
+#include <time.h>
 #include <string.h>
 #include "BaseDefine.h"
-#include "DBlen.h"
-
-struct WhiteListTable {
-    char whitelist[WLlen];
-    char id[IDlen];
-    char date[DATElen];
-};
-
-struct MACTable {
-    char id[IDlen];
-    char public_key[PKlen];
-    char mac0[MAClen];
-    char mac1[MAClen];
-    char mac2[MAClen];
-};
-
-struct AdminTable {
-    char idp[IDlen];
-    int access;
-    char pwd[PWDlen];
-};
-
-struct InfoTable {
-    char id[IDlen];
-    int access;
-    char name[NAMElen];
-    char birth[BIRTHlen];
-    char email[EMAILlen];
-    char phone[PHONElen];
-    char date[DATElen];
-};
-
-struct InsInfo {
-    char id[IDlen];
-    char pwd[PWDlen];
-    char public_key[PKlen];
-    char mac[MAClen];
-    char name[NAMElen];
-    char birth[BIRTHlen];
-    char email[EMAILlen];
-    char phone[PHONElen];
-    char date[DATElen];
-    int access;
-};
-
-enum Account {
-    Robot, CPS, Root
-};
+#include "DB.h"
 
 static int callback(void *NotUsed, int argc, char **argv, char **azColName) {
     int i;
@@ -61,9 +15,157 @@ static int callback(void *NotUsed, int argc, char **argv, char **azColName) {
     return 0;
 }
 
-int selWhitelist(const char sel_wl[WLlen], OUT struct WhiteListTable sel_wt) {
-    char whitelist[WLlen];
+char *dateNow(struct tm *t) { //date 가져오는 함수
+    static char now[DATElen] = { 0, };
+
+    sprintf(now, "%04d-%02d-%02d %02d:%02d:%02d", t->tm_year + 1900,
+                t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
+
+    return now;
+}
+
+int selWhitelist(const char sel_wl[WLlen], OUT struct WhiteListTable sel_wt) { // case 19
+    //char whitelist[WLlen];
     OUT struct WhiteListTable wt;
+
+    sqlite3 *db;
+   	char *errmsg;
+   	char *sql; // table schema sql
+    sqlite3_stmt *res;
+    int rc;
+    char input_sql[512];
+    char whitelist[WLlen] = { 0, };
+    char id[IDlen] = { 0, };
+
+    int menu; // search menu
+    char tmp; // Enter Key remove
+
+    rc = sqlite3_open("WHITELIST.db", &db);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't open WHITELIST DB : %s\n", sqlite3_errmsg(db));
+       	return 1;
+    }
+   	else {
+        fprintf(stderr, "Opened database successfully\n");
+    }
+    sqlite3_busy_timeout(db, 500); // db open시 timeout 500ms로 설정
+
+    // WHITELIST Table 출력
+    sql = "select * from WHITELIST";
+    rc = sqlite3_exec(db, sql, callback, 0, &errmsg);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't print schema : %s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+    else {
+        fprintf(stderr, "Print schema successfully\n");
+    }
+
+    int sel_wl_wl() { // case 1
+        puts("search whitelist:");
+        gets(whitelist);
+
+        fflush(stdin);
+        strcpy(input_sql, "SELECT WHITELIST FROM WHITELIST WHERE WHITELIST like '%");
+        strcat(input_sql, whitelist);
+        strcat(input_sql, "%';");
+        printf("%s\n", input_sql);
+
+        rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
+        if(rc != SQLITE_OK) {
+            fprintf(stderr, "Can't search : %s\n", sqlite3_errmsg(db));
+            return 1;
+        }
+        else {
+            fprintf(stderr, "Print search successfully\n");
+        }
+    }
+
+    int sel_wl_id() { // case 2
+        puts("search id:");
+        gets(id);
+
+        fflush(stdin);
+        strcpy(input_sql, "SELECT ID FROM WHITELIST WHERE ID like '%");
+        strcat(input_sql, id);
+        strcat(input_sql, "%';");
+        printf("%s\n", input_sql);
+
+        rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
+        if(rc != SQLITE_OK) {
+            fprintf(stderr, "Can't search : %s\n", sqlite3_errmsg(db));
+            return 1;
+        }
+        else {
+            fprintf(stderr, "Print search successfully\n");
+        }
+    }
+
+    int sel_wl_wi() { // case 3
+        puts("search whitelist:");
+        gets(whitelist);
+        puts("search id:");
+        gets(id);
+
+        fflush(stdin);
+        strcpy(input_sql, "SELECT WHITELIST, ID FROM WHITELIST WHERE WHITELIST like '%");
+        strcat(input_sql, whitelist);
+        strcat(input_sql, "%' OR ID like '%");
+        strcat(input_sql, id);
+        strcat(input_sql, "%';");
+        printf("%s\n", input_sql);
+
+        rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
+        if(rc != SQLITE_OK) {
+            fprintf(stderr, "Can't search : %s\n", sqlite3_errmsg(db));
+            return 1;
+        }
+        else {
+            fprintf(stderr, "Print search successfully\n");
+        }
+    }
+
+    printf("WHITELIST TABLE's search\n");
+    printf("1. whitelist 로 검색\n");
+    printf("2. id 로 검색\n");
+    printf("3. whitelist 와 id 로 검색\n");
+    printf("0. EXIT\n");
+    printf("검색하려는 항목의 번호를 고르세요:");
+    scanf("%d", &menu);
+
+    while((tmp = getchar()) != '\n') { //엔터키 삭제 함수
+        putchar(tmp);
+    }
+
+    switch(menu) {
+        case 1:
+            sel_wl_wl();
+            break;
+
+        case 2:
+            sel_wl_id();
+            break;
+
+        case 3:
+            sel_wl_wi();
+            break;
+
+        default:
+            break;
+    }
+
+    rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't input : %s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+    else {
+        fprintf(stderr, "Print input successfully\n");
+    }
+
+    sqlite3_close(db);
+
+    return 0;
 }
 
 int selAdminInfo(const char sel_id[IDlen], const char sel_pwd[PWDlen], OUT struct InfoTable sel_it) {
@@ -88,22 +190,16 @@ int delAdmin(const char del_id[], const char del_pwd[]) {
     char pwd[PWDlen];
 }
 
-int delWhiteList(char del_wl[WLlen]) {
-    char whitelist[WLlen];
-}
-
-int insWhiteListTable(struct WhiteListTable ins_wt) {
-    struct WhiteListTable wt;
+int delWhiteList(char del_wl[WLlen]) { // case 18
+    //char whitelist[WLlen];
 
     sqlite3 *db;
    	char *errmsg;
     sqlite3_stmt *res;
     int rc;
-    char *sql;
     char input_sql[512];
     char whitelist[WLlen] = { 0, };
     char id[IDlen] = { 0, };
-    char date[DATElen];
 
     rc = sqlite3_open("WHITELIST.db", &db);
     if(rc != SQLITE_OK) {
@@ -115,37 +211,77 @@ int insWhiteListTable(struct WhiteListTable ins_wt) {
     }
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
-    sql = "CREATE TABLE WHITELIST ("\
-        "whitelist TEXT(30) PRIMARY KEY NOT NULL,"\
-        "id TEXT(9) NOT NULL,"\
-        "date TEXT(12));";
-   	rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
+    res = "Callback Function Called";
+
+    puts("WHITELIST TABLE's records delete.\n");
+    puts("input whitelist:");
+    gets(whitelist);
+    puts("input id:");
+    gets(id);
+
+    fflush(stdin);
+    strcpy(input_sql, "DELETE from WHITELIST where whitelist = '");
+    strcat(input_sql, whitelist);
+    strcat(input_sql, "';");
+    printf("%s\n", input_sql);
+    rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
     if(rc != SQLITE_OK) {
-       	fprintf(stderr, "Can't create WHITELIST table : %s\n", sqlite3_errmsg(db));
-       	return 1;
+        fprintf(stderr, "Can't delete : %s\n", sqlite3_errmsg(db));
+        return 1;
     }
     else {
-       	fprintf(stderr, "Created table successfully\n");
+        fprintf(stderr, "Delete successfully\n");
     }
 
-    system("clear");
+    sqlite3_close(db);
+
+    return 0;
+}
+
+int insWhiteListTable(struct WhiteListTable ins_wt) { // case 16
+    struct WhiteListTable wt;
+
+    sqlite3 *db;
+   	char *errmsg;
+    sqlite3_stmt *res;
+    int rc;
+    char input_sql[512];
+    char whitelist[WLlen] = { 0, };
+    char id[IDlen] = { 0, };
+
+    char date[DATElen] = { 0, };
+    struct tm *t;
+    time_t now;
+    now = time(NULL);
+    t = localtime(&now);
+    char *str_now = dateNow(t);
+
+    rc = sqlite3_open("WHITELIST.db", &db);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't open WHITELIST DB : %s\n", sqlite3_errmsg(db));
+       	return 1;
+    }
+   	else {
+        fprintf(stderr, "Opened database successfully\n");
+    }
+    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
     puts("WHITELIST TABLE's insert\n");
     puts("input whitelist:");
     gets(whitelist);
     puts("input id:");
     gets(id);
-    puts("input date:");
-    gets(date);
+    puts("date Enter:");
+    printf("%s\n", str_now);
+    strcpy(date, str_now);
 
     fflush(stdin);
     strcpy(input_sql, "insert into WHITELIST values('");
-    strcat(input_sql, whitelist); //whitelist
+    strcat(input_sql, whitelist);
     strcat(input_sql, "','");
-    strcat(input_sql, id); //id
+    strcat(input_sql, id);
     strcat(input_sql, "','");
-    //sql = "select datetimes(strftime('%s', 'now'), 'unixepoch', 'localtime'))"; //time, date
-    strcat(input_sql, date); //date
+    strcat(input_sql, date);
     strcat(input_sql, "');");
     printf("%s\n", input_sql);
     rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
@@ -162,16 +298,187 @@ int insWhiteListTable(struct WhiteListTable ins_wt) {
     return 0;
 }
 
-int insAdminTable(struct InsInfo ins_at) {
+int insAdminTable(struct InsInfo ins_at) { // case 36 & 46
     struct InsInfo at;
+
+    sqlite3 *db;
+   	char *errmsg;
+    sqlite3_stmt *res;
+    int rc;
+    char *sql;
+    char input_sql[512];
+    char id[IDlen] = { 0, };
+    char pwd[PWDlen] = { 0, };
+    char public_key[PKlen] = { 0, };
+    char mac[MAClen] = { 0, };
+    char name[NAMElen] = { 0, };
+    char birth[BIRTHlen] = { 0, };
+    char email[EMAILlen] = { 0, };
+    char phone[PHONElen] = { 0, };
+    char date[DATElen] = { 0, };
+    int access;
+
+    char date[DATElen] = { 0, };
+    struct tm *t;
+    time_t now;
+    now = time(NULL);
+    t = localtime(&now);
+    char *str_now = dateNow(t);
+
+    rc = sqlite3_open("ADMINISTRATOR.db", &db);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't open ADMINISTRATOR DB : %s\n", sqlite3_errmsg(db));
+       	return 1;
+    }
+   	else {
+        fprintf(stderr, "Opened ADMINISTRATOR database successfully\n");
+    }
+    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+
+    puts("ADMIN TABLE's insert\n");
+    puts("input id:");
+    gets(id);
+    puts("input access:");
+    gets(access);
+    puts("input pwd:");
+    gets(pwd);
+
+    fflush(stdin);
+    strcpy(input_sql, "insert into ADMIN values('");
+    strcat(input_sql, id);
+    strcat(input_sql, "','");
+    strcat(input_sql, access);
+    strcat(input_sql, "','");
+    strcat(input_sql, pwd);
+    strcat(input_sql, "');");
+    printf("%s\n", input_sql);
+    rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't input : %s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+    else {
+        fprintf(stderr, "admin table input successfully\n");
+    }
+
+    puts("INFO TABLE's insert\n");
+    puts("input id:");
+    gets(id);
+    puts("input access:");
+    gets(access);
+    puts("input name:");
+    gets(name);
+    puts("input birth:");
+    gets(birth);
+    puts("input email:");
+    gets(email);
+    puts("input phone:");
+    gets(phone);
+    puts("date Enter:");
+    printf("%s\n", str_now);
+    strcpy(date, str_now);
+
+    fflush(stdin);
+    strcpy(input_sql, "insert into INFO values('");
+    strcat(input_sql, id);
+    strcat(input_sql, "','");
+    strcat(input_sql, access);
+    strcat(input_sql, "','");
+    strcat(input_sql, name);
+    strcat(input_sql, "','");
+    strcat(input_sql, birth);
+    strcat(input_sql, "','");
+    strcat(input_sql, email);
+    strcat(input_sql, "','");
+    strcat(input_sql, phone);
+    strcat(input_sql, "','");
+    strcat(input_sql, date);
+    strcat(input_sql, "');");
+    printf("%s\n", input_sql);
+    rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't input : %s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+    else {
+        fprintf(stderr, "info table input successfully\n");
+    }
+
+    sqlite3_close(db);
+
+    return 0;
 }
 
 int updateAdmin(struct InsInfo up_a) {
     struct InsInfo a;
 }
 
-int updateAdminwl(struct WhiteListTable up_a) {
+int updateAdminwl(struct WhiteListTable up_a) { // case 17
     struct WhiteListTable wt;
+
+    sqlite3 *db;
+   	char *errmsg;
+    sqlite3_stmt *res;
+    int rc;
+    char *sql;
+    char input_sql[512];
+    char id[IDlen] = { 0, };
+
+    char src_white[WLlen] = { 0, }; // 수정할 화이트리스트 ->다른 화이트리스트로 변경됨.
+    char whitelist[WLlen] = { 0, };
+
+    char date[DATElen] = { 0, };
+    struct tm *t;
+    time_t now;
+    now = time(NULL);
+    t = localtime(&now);
+    char *str_now = dateNow(t);
+
+    rc = sqlite3_open("WHITELIST.db", &db);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't open WHITELIST DB : %s\n", sqlite3_errmsg(db));
+       	return 1;
+    }
+   	else {
+        fprintf(stderr, "Opened database successfully\n");
+    }
+    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+
+    res = "Callback Function Called";
+
+    puts("WHITELIST TABLE's Update\n");
+    puts("update source whitelist:");
+    gets(src_white);
+    puts("update whitelist:");
+    gets(whitelist);
+
+    puts("date Enter:");
+    printf("%s\n", str_now);
+    strcpy(date, str_now);
+
+    fflush(stdin);
+    strcpy(input_sql, "UPDATE WHITELIST SET (date, whitelist) = ('");
+    strcat(input_sql, date);
+    strcat(input_sql, "', '");
+    strcat(input_sql, whitelist);
+    strcat(input_sql, "') ");
+    strcat(input_sql, "where whitelist = '");
+    strcat(input_sql, src_white);
+    strcat(input_sql, "';");
+    printf("%s\n", input_sql);
+
+    rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't whitelist Update : %s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+    else {
+        fprintf(stderr, "Whitelist update successfully\n");
+    }
+
+    sqlite3_close(db);
+
+    return 0;
 }
 
 int insMAC(const char insmac_id[IDlen], const char isnmac_mac[MAClen]) {
@@ -192,6 +499,8 @@ int updatePWD(const char uppwd_id[IDlen], const char uppwd_pwd[PWDlen]) {
 int updateAccess(const char upacc_id[IDlen], int upacc_acc) {
     char id[IDlen];
     int access;
+
+    return 0;
 }
 
 void sqlString(char str[PKlen]) {

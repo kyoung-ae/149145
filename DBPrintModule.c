@@ -6,6 +6,8 @@ void printMenu(int pr_menu) {
     int func = 0;
     int menu = 0;
 
+    char tmp; //Enter Key remove
+
     printf("Select DB Table\n");
     printf("1 : WHITELIST DB Table\n");
     printf("2 : ADMINISTRATOR DB MAC Table\n");
@@ -15,7 +17,7 @@ void printMenu(int pr_menu) {
     printf("Table :");
     scanf("%d", &tb);
 
-    printf("Select Number\n");
+    printf("\nSelect Number\n");
     printf("6 : insert\n");
     printf("7 : update\n");
     printf("8 : delete\n");
@@ -25,20 +27,24 @@ void printMenu(int pr_menu) {
     scanf("%d", &func);
     menu =  tb*10 + func;
 
+    while((tmp = getchar()) != '\n') { //엔터키 삭제 함수
+        putchar(tmp);
+    }
+
     switch(menu) {
-        case 16:
+        case 16: // ok
             insWhiteListTable();
             break;
 
-        case 17:
+        case 17: // ok
             updateAdminwl();
             break;
 
-        case 18:
+        case 18: // ok
             delWhiteList();
             break;
 
-        case 19:
+        case 19: // ok
             selWhitelist();
             break;
 
@@ -58,7 +64,7 @@ void printMenu(int pr_menu) {
             selAdminInfo();
             break;
 
-        case 36:
+        case 36: //
             insAdminTable();
             break;
 
@@ -75,7 +81,7 @@ void printMenu(int pr_menu) {
             break;
 
         case 46:
-            insAdminTable();
+            //insInfoTable();
             break;
 
         case 47:
