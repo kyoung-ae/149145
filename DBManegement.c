@@ -24,13 +24,21 @@ char *dateNow(struct tm *t) { //date 가져오는 함수
     return now;
 }
 
+<<<<<<< HEAD
 int selWhitelist(const char sel_wl[WLlen], OUT struct WhiteListTable sel_wt) { // case 46
+=======
+int selWhitelist(const char sel_wl[WLlen], OUT struct WhiteListTable sel_wt) { // case 19
+>>>>>>> 2184033f1b187bf13e2c4a7719d3c8e57ad3b386
     //char whitelist[WLlen];
     OUT struct WhiteListTable wt;
 
     sqlite3 *db;
    	char *errmsg;
    	char *sql; // table schema sql
+<<<<<<< HEAD
+=======
+    sqlite3_stmt *res;
+>>>>>>> 2184033f1b187bf13e2c4a7719d3c8e57ad3b386
     int rc;
     char input_sql[512];
     char whitelist[WLlen] = { 0, };
@@ -65,10 +73,17 @@ int selWhitelist(const char sel_wl[WLlen], OUT struct WhiteListTable sel_wt) { /
         gets(whitelist);
 
         fflush(stdin);
+<<<<<<< HEAD
         strcpy(input_sql, "SELECT * FROM WHITELIST WHERE WHITELIST like '%");
         strcat(input_sql, whitelist);
         strcat(input_sql, "%';");
         //printf("%s\n", input_sql);
+=======
+        strcpy(input_sql, "SELECT WHITELIST FROM WHITELIST WHERE WHITELIST like '%");
+        strcat(input_sql, whitelist);
+        strcat(input_sql, "%';");
+        printf("%s\n", input_sql);
+>>>>>>> 2184033f1b187bf13e2c4a7719d3c8e57ad3b386
 
         rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
         if(rc != SQLITE_OK) {
@@ -85,10 +100,17 @@ int selWhitelist(const char sel_wl[WLlen], OUT struct WhiteListTable sel_wt) { /
         gets(id);
 
         fflush(stdin);
+<<<<<<< HEAD
         strcpy(input_sql, "SELECT * FROM WHITELIST WHERE ID = '");
         strcat(input_sql, id);
         strcat(input_sql, "';");
         //printf("%s\n", input_sql);
+=======
+        strcpy(input_sql, "SELECT ID FROM WHITELIST WHERE ID like '%");
+        strcat(input_sql, id);
+        strcat(input_sql, "%';");
+        printf("%s\n", input_sql);
+>>>>>>> 2184033f1b187bf13e2c4a7719d3c8e57ad3b386
 
         rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
         if(rc != SQLITE_OK) {
@@ -100,6 +122,7 @@ int selWhitelist(const char sel_wl[WLlen], OUT struct WhiteListTable sel_wt) { /
         }
     }
 
+<<<<<<< HEAD
     void Itmenu() { // WHITELIST table menu
         printf("1. WHITELIST\n");
         printf("2. ID\n");
@@ -123,6 +146,69 @@ int selWhitelist(const char sel_wl[WLlen], OUT struct WhiteListTable sel_wt) { /
         }
     }
     Itmenu();
+=======
+    int sel_wl_wi() { // case 3
+        puts("search whitelist:");
+        gets(whitelist);
+        puts("search id:");
+        gets(id);
+
+        fflush(stdin);
+        strcpy(input_sql, "SELECT WHITELIST, ID FROM WHITELIST WHERE WHITELIST like '%");
+        strcat(input_sql, whitelist);
+        strcat(input_sql, "%' OR ID like '%");
+        strcat(input_sql, id);
+        strcat(input_sql, "%';");
+        printf("%s\n", input_sql);
+
+        rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
+        if(rc != SQLITE_OK) {
+            fprintf(stderr, "Can't search : %s\n", sqlite3_errmsg(db));
+            return 1;
+        }
+        else {
+            fprintf(stderr, "Print search successfully\n");
+        }
+    }
+
+    printf("WHITELIST TABLE's search\n");
+    printf("1. whitelist 로 검색\n");
+    printf("2. id 로 검색\n");
+    printf("3. whitelist 와 id 로 검색\n");
+    printf("0. EXIT\n");
+    printf("검색하려는 항목의 번호를 고르세요:");
+    scanf("%d", &menu);
+
+    while((tmp = getchar()) != '\n') { //엔터키 삭제 함수
+        putchar(tmp);
+    }
+
+    switch(menu) {
+        case 1:
+            sel_wl_wl();
+            break;
+
+        case 2:
+            sel_wl_id();
+            break;
+
+        case 3:
+            sel_wl_wi();
+            break;
+
+        default:
+            break;
+    }
+
+    rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't input : %s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+    else {
+        fprintf(stderr, "Print input successfully\n");
+    }
+>>>>>>> 2184033f1b187bf13e2c4a7719d3c8e57ad3b386
 
     sqlite3_close(db);
 
@@ -141,17 +227,29 @@ int selPublicKey(const char sel_id[IDlen], const char sel_pwd[PWDlen], OUT char 
     OUT char public_key[PKlen]; // OUT publickey를 반환함
 }
 
+<<<<<<< HEAD
 int searchPWD(const char search_id[IDlen], const char seearch_pwd[PWDlen]) { // case 48 참고 // pwd 인증:pwd를 알고 있는 경우
+=======
+int searchPWD(const char search_id[IDlen], const char seearch_pwd[PWDlen]) {
+>>>>>>> 2184033f1b187bf13e2c4a7719d3c8e57ad3b386
     char id[IDlen];
     char pwd[PWDlen];
 }
 
+<<<<<<< HEAD
 int delAdmin(const char del_id[IDlen], const char del_pwd[PWDlen]) { // case 38 & 39 참고
+=======
+int delAdmin(const char del_id[IDlen], const char del_pwd[PWDlen]) {
+>>>>>>> 2184033f1b187bf13e2c4a7719d3c8e57ad3b386
     char id[IDlen];
     char pwd[PWDlen];
 }
 
+<<<<<<< HEAD
 int delWhiteList(char del_wl[WLlen]) { // case 36
+=======
+int delWhiteList(char del_wl[WLlen]) { // case 18
+>>>>>>> 2184033f1b187bf13e2c4a7719d3c8e57ad3b386
     //char whitelist[WLlen];
 
     sqlite3 *db;
@@ -258,11 +356,19 @@ int insWhiteListTable(struct WhiteListTable ins_wt) { // case 16
     return 0;
 }
 
+<<<<<<< HEAD
 int insAdminInfo(struct InsInfo ins_ai) { // case 18 & 19 참고
     struct InsInfo ai;
 }
 
 int insAdminTable(struct AdminTable ins_at) { // case 18
+=======
+int insAdminInfo(struct InsInfo ins_ai) { // case 36 & 46 참고
+    struct InsInfo ai;
+}
+
+int insAdminTable(struct AdminTable ins_at) { // case 36
+>>>>>>> 2184033f1b187bf13e2c4a7719d3c8e57ad3b386
     struct AdminTable at;
 
     sqlite3 *db;
@@ -320,7 +426,11 @@ int insAdminTable(struct AdminTable ins_at) { // case 18
     return 0;
 }
 
+<<<<<<< HEAD
 int insInfoTable(struct InfoTable ins_it) { // case 19
+=======
+int insInfoTable(struct InfoTable ins_it) { // case 46
+>>>>>>> 2184033f1b187bf13e2c4a7719d3c8e57ad3b386
     struct InfoTable it;
 
     sqlite3 *db;
@@ -396,11 +506,19 @@ int insInfoTable(struct InfoTable ins_it) { // case 19
     return 0;
 }
 
+<<<<<<< HEAD
 int updateAdmin(struct InsInfo up_a) { // case 28 & 29 참고
     struct InsInfo a;
 }
 
 int updateInfoTable(struct InfoTable up_it) { // case 29
+=======
+int updateAdmin(struct InsInfo up_a) { // case 37 & 47 참고
+    struct InsInfo a;
+}
+
+int updateInfoTable(struct InfoTable up_it) { // case 47 코딩 해야함...
+>>>>>>> 2184033f1b187bf13e2c4a7719d3c8e57ad3b386
     struct AdminTable it;
 
     sqlite3 *db;
@@ -410,6 +528,7 @@ int updateInfoTable(struct InfoTable up_it) { // case 29
     char *sql;
     char input_sql[512];
     char id[IDlen] = { 0, };
+<<<<<<< HEAD
     char name[NAMElen] = { 0, };
     char birth[BIRTHlen] = { 0, };
     char email[EMAILlen] = { 0, };
@@ -421,6 +540,11 @@ int updateInfoTable(struct InfoTable up_it) { // case 29
     char** result; // get table result
     int i, j, row, col; // get table row,column
     char metatype[256]; // get table loop
+=======
+
+    char src_white[WLlen] = { 0, }; // 수정할 화이트리스트 ->다른 화이트리스트로 변경됨.
+    char whitelist[WLlen] = { 0, };
+>>>>>>> 2184033f1b187bf13e2c4a7719d3c8e57ad3b386
 
     char date[DATElen] = { 0, };
     struct tm *t;
@@ -429,6 +553,7 @@ int updateInfoTable(struct InfoTable up_it) { // case 29
     t = localtime(&now);
     char *str_now = dateNow(t);
 
+<<<<<<< HEAD
     rc = sqlite3_open("ADMINISTRATOR.db", &db);
     if(rc != SQLITE_OK) {
         fprintf(stderr, "Can't open ADMINISTRATOR DB : %s\n", sqlite3_errmsg(db));
@@ -436,11 +561,21 @@ int updateInfoTable(struct InfoTable up_it) { // case 29
     }
    	else {
         fprintf(stderr, "Opened ADMINISTRATOR database successfully\n");
+=======
+    rc = sqlite3_open("WHITELIST.db", &db);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't open WHITELIST DB : %s\n", sqlite3_errmsg(db));
+       	return 1;
+    }
+   	else {
+        fprintf(stderr, "Opened database successfully\n");
+>>>>>>> 2184033f1b187bf13e2c4a7719d3c8e57ad3b386
     }
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
     res = "Callback Function Called";
 
+<<<<<<< HEAD
     printf("INFO TABLE's Update\n");
     puts("수정할 데이터의 id(기본키) 입력:");
     gets(id);
@@ -597,12 +732,47 @@ int updateInfoTable(struct InfoTable up_it) { // case 29
     }
     sqlite3_free_table(result);
 
+=======
+    puts("WHITELIST TABLE's Update\n");
+    puts("update source whitelist:");
+    gets(src_white);
+    puts("update whitelist:");
+    gets(whitelist);
+
+    puts("date Enter:");
+    printf("%s\n", str_now);
+    strcpy(date, str_now);
+
+    fflush(stdin);
+    strcpy(input_sql, "UPDATE WHITELIST SET (date, whitelist) = ('");
+    strcat(input_sql, date);
+    strcat(input_sql, "', '");
+    strcat(input_sql, whitelist);
+    strcat(input_sql, "') ");
+    strcat(input_sql, "where whitelist = '");
+    strcat(input_sql, src_white);
+    strcat(input_sql, "';");
+    printf("%s\n", input_sql);
+
+    rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't whitelist Update : %s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+    else {
+        fprintf(stderr, "Whitelist update successfully\n");
+    }
+>>>>>>> 2184033f1b187bf13e2c4a7719d3c8e57ad3b386
     sqlite3_close(db);
 
     return 0;
 }
 
+<<<<<<< HEAD
 int updateAdminTable(struct AdminTable up_at) { // case 28
+=======
+int updateAdminTable(struct AdminTable up_at) { // case 37
+>>>>>>> 2184033f1b187bf13e2c4a7719d3c8e57ad3b386
     struct AdminTable at;
 
     sqlite3 *db;
@@ -763,7 +933,11 @@ int updateAdminTable(struct AdminTable up_at) { // case 28
     return 0;
 }
 
+<<<<<<< HEAD
 int updateAdminwl(struct WhiteListTable up_w) { // case 26
+=======
+int updateAdminwl(struct WhiteListTable up_w) { // case 17
+>>>>>>> 2184033f1b187bf13e2c4a7719d3c8e57ad3b386
     struct WhiteListTable wt;
 
     sqlite3 *db;
@@ -849,6 +1023,7 @@ int updatePWD(const char uppwd_id[IDlen], const char uppwd_pwd[PWDlen]) {
 int updateAccess(const char upacc_id[IDlen], int upacc_acc) {
     char id[IDlen];
     int access;
+<<<<<<< HEAD
 
     return 0;
 }
@@ -1314,5 +1489,8 @@ int selInfoTable(struct InfoTable sel_it) { // case 49
 
     sqlite3_close(db);
 
+=======
+
+>>>>>>> 2184033f1b187bf13e2c4a7719d3c8e57ad3b386
     return 0;
 }
