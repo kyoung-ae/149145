@@ -13,6 +13,6 @@ int main(int argc, char *argv[]) { // int selMenu(int menu) 로 함수명을 바
     printf("\n");
 
     printMenu();
-
+    // 삽입, 삭제, 업데이트 등의 작업 후에는 sql 문으로 VACUUM; 명령을 실행해야 최적화됨(윈도우의 디스크 조각모음 같은 기능)
     return 0;
 }

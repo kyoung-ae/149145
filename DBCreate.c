@@ -64,7 +64,7 @@ int createDB() {
     //admin table create
    	sql = "CREATE TABLE ADMIN ("\
         "id TEXT(9) PRIMARY KEY NOT NULL,"\
-        "access INT(1),"\
+        "access INTEGER(1),"\
         "pwd TEXT(513));";
     rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
     if(rc != SQLITE_OK) {
@@ -78,7 +78,6 @@ int createDB() {
    	//info table create
    	sql = "CREATE TABLE INFO ("\
         "id TEXT(9) PRIMARY KEY NOT NULL,"\
-        "access INT(1),"\
         "name TEXT(30),"\
         "birth TEXT(6),"\
         "email TEXT(50),"\

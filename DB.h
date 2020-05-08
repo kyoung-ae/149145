@@ -1,6 +1,6 @@
 #define WLlen 31
 #define IDlen 10
-#define DATElen 13
+#define DATElen 20
 #define PKlen 271
 #define MAClen 18
 #define PWDlen 513
@@ -31,7 +31,6 @@ struct AdminTable {
 
 struct InfoTable {
     char id[IDlen];
-    int access;
     char name[NAMElen];
     char birth[BIRTHlen];
     char email[EMAILlen];
