@@ -5,7 +5,7 @@
 #include "BaseDefine.h"
 #include "DB.h"
 
-static int callback(void *NotUsed, int argc, char **argv, char **azColName) {
+static int callback(void *NotUsed, int argc, char **argv, char **azColName) { // callback
     int i;
     for(i = 0; i < argc; i++) {
         printf("%s = %s\n", azColName[i], argv[i] ? argv[i]:"NULL");
@@ -15,13 +15,37 @@ static int callback(void *NotUsed, int argc, char **argv, char **azColName) {
     return 0;
 }
 
-char *dateNow(struct tm *t) { //date 가져오는 함수
+char *dateNow(struct tm *t) { // date 가져오는 함수
     static char now[DATElen] = { 0, };
 
     sprintf(now, "%04d-%02d-%02d %02d:%02d:%02d", t->tm_year + 1900,
                 t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
 
     return now;
+}
+
+int openDB() { // CPS.db open
+    sqlite3 *db;
+   	char *errmsg;
+    int rc;
+    char *sql_fk; // Foreign Key 활성화 변수
+
+    rc = sqlite3_open("CPS.db", &db);
+    if(rc != SQLITE_OK) {
+    	fprintf(stderr, "Can't open CPS DB : %s\n", sqlite3_errmsg(db));
+        return 1;
+    }
+
+    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+
+    sql_fk = "PRAGMA foreign_keys = 1"; // Foreign Key 활성화(1) 시킴
+    rc = sqlite3_exec(db, sql_fk, 0, 0, &errmsg);
+    if(rc != SQLITE_OK) {
+       	fprintf(stderr, "참조키 활성화 에러 : %s\n", sqlite3_errmsg(db));
+       	return 1;
+    }
+    else
+        return 0;
 }
 
 int selWhitelist(const char sel_wl[WLlen], OUT struct WhiteListTable sel_wt) { // case 46
@@ -39,15 +63,7 @@ int selWhitelist(const char sel_wl[WLlen], OUT struct WhiteListTable sel_wt) { /
     int menu; // search menu
     char tmp; // Enter Key remove
 
-    rc = sqlite3_open("WHITELIST.db", &db);
-    if(rc != SQLITE_OK) {
-        fprintf(stderr, "Can't open WHITELIST DB : %s\n", sqlite3_errmsg(db));
-       	return 1;
-    }
-   	else {
-        fprintf(stderr, "Opened database successfully\n");
-    }
-    sqlite3_busy_timeout(db, 500); // db open시 timeout 500ms로 설정
+    openDB();
 
     // WHITELIST Table 출력
     sql = "select * from WHITELIST";
@@ -162,15 +178,7 @@ int delWhiteList(char del_wl[WLlen]) { // case 36
     char whitelist[WLlen] = { 0, };
     char id[IDlen] = { 0, };
 
-    rc = sqlite3_open("WHITELIST.db", &db);
-    if(rc != SQLITE_OK) {
-        fprintf(stderr, "Can't open WHITELIST DB : %s\n", sqlite3_errmsg(db));
-       	return 1;
-    }
-   	else {
-        fprintf(stderr, "Opened database successfully\n");
-    }
-    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+    openDB();
 
     res = "Callback Function Called";
 
@@ -216,15 +224,7 @@ int insWhiteListTable(struct WhiteListTable ins_wt) { // case 16
     t = localtime(&now);
     char *str_now = dateNow(t);
 
-    rc = sqlite3_open("WHITELIST.db", &db);
-    if(rc != SQLITE_OK) {
-        fprintf(stderr, "Can't open WHITELIST DB : %s\n", sqlite3_errmsg(db));
-       	return 1;
-    }
-   	else {
-        fprintf(stderr, "Opened database successfully\n");
-    }
-    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+    openDB();
 
     puts("WHITELIST TABLE's insert\n");
     puts("input whitelist:");
@@ -275,15 +275,7 @@ int insAdminTable(struct AdminTable ins_at) { // case 18
     char tmp; //엔터키 삭제 변수
     char buf_access[2]; // int형의 access값을 문자로 받을 변수
 
-    rc = sqlite3_open("ADMINISTRATOR.db", &db);
-    if(rc != SQLITE_OK) {
-        fprintf(stderr, "Can't open ADMINISTRATOR DB : %s\n", sqlite3_errmsg(db));
-       	return 1;
-    }
-   	else {
-        fprintf(stderr, "Opened ADMINISTRATOR database successfully\n");
-    }
-    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+    openDB();
 
     puts("ADMIN TABLE's insert\n");
     puts("input id:");
@@ -340,15 +332,7 @@ int insInfoTable(struct InfoTable ins_it) { // case 19
     t = localtime(&now);
     char *str_now = dateNow(t);
 
-    rc = sqlite3_open("ADMINISTRATOR.db", &db);
-    if(rc != SQLITE_OK) {
-        fprintf(stderr, "Can't open ADMINISTRATOR DB : %s\n", sqlite3_errmsg(db));
-       	return 1;
-    }
-   	else {
-        fprintf(stderr, "Opened ADMINISTRATOR database successfully\n");
-    }
-    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+    openDB();
 
     printf("\n등록 데이터는 입력 후 EnterKey,\n");
     printf("등록을 건너띄려면 바로 EnterKey를 누르세요.\n");
@@ -429,15 +413,7 @@ int updateInfoTable(struct InfoTable up_it) { // case 29
     t = localtime(&now);
     char *str_now = dateNow(t);
 
-    rc = sqlite3_open("ADMINISTRATOR.db", &db);
-    if(rc != SQLITE_OK) {
-        fprintf(stderr, "Can't open ADMINISTRATOR DB : %s\n", sqlite3_errmsg(db));
-       	return 1;
-    }
-   	else {
-        fprintf(stderr, "Opened ADMINISTRATOR database successfully\n");
-    }
-    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+    openDB();
 
     res = "Callback Function Called";
 
@@ -625,15 +601,7 @@ int updateAdminTable(struct AdminTable up_at) { // case 28
 
     char buf_access[2]; // int형의 access값을 문자로 받을 변수
 
-    rc = sqlite3_open("ADMINISTRATOR.db", &db);
-    if(rc != SQLITE_OK) {
-        fprintf(stderr, "Can't open ADMINISTRATOR DB : %s\n", sqlite3_errmsg(db));
-       	return 1;
-    }
-   	else {
-        fprintf(stderr, "Opened ADMINISTRATOR database successfully\n");
-    }
-    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+    openDB();
 
     res = "Callback Function Called";
 
@@ -784,15 +752,7 @@ int updateAdminwl(struct WhiteListTable up_w) { // case 26
     t = localtime(&now);
     char *str_now = dateNow(t);
 
-    rc = sqlite3_open("WHITELIST.db", &db);
-    if(rc != SQLITE_OK) {
-        fprintf(stderr, "Can't open WHITELIST DB : %s\n", sqlite3_errmsg(db));
-       	return 1;
-    }
-   	else {
-        fprintf(stderr, "Opened database successfully\n");
-    }
-    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+    openDB();
 
     res = "Callback Function Called";
 
@@ -871,15 +831,7 @@ int delAdminTable(struct AdminTable del_at) { // case 38
     char del_pwd[PWDlen] = { 0, }; // 삭제되는 PWD
     char pwd[PWDlen] = { 0, };
 
-    rc = sqlite3_open("ADMINISTRATOR.db", &db);
-    if(rc != SQLITE_OK) {
-        fprintf(stderr, "Can't open ADMINISTRATOR DB : %s\n", sqlite3_errmsg(db));
-       	return 1;
-    }
-   	else {
-        fprintf(stderr, "Opened ADMINISTRATOR database successfully\n");
-    }
-    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+    openDB();
 
     res = "Callback Function Called";
 
@@ -949,15 +901,7 @@ int selAdminTable(struct AdminTable sel_at) { // case 48
 
     int menu; // search menu
 
-    rc = sqlite3_open("ADMINISTRATOR.db", &db);
-    if(rc != SQLITE_OK) {
-        fprintf(stderr, "Can't open ADMINISTRATOR DB : %s\n", sqlite3_errmsg(db));
-       	return 1;
-    }
-   	else {
-        fprintf(stderr, "Opened ADMINISTRATOR database successfully\n");
-    }
-    sqlite3_busy_timeout(db, 500); // db open시 timeout 500ms로 설정
+    openDB();
 
     //ADMIN Table 출력
     sql = "select id, access from ADMIN";
@@ -1088,15 +1032,7 @@ int delInfoTable(struct InfoTable del_it) { // case 39
     char phone[PHONElen] = { 0, };
     char date[DATElen] = { 0, };
 
-    rc = sqlite3_open("ADMINISTRATOR.db", &db);
-    if(rc != SQLITE_OK) {
-        fprintf(stderr, "Can't open ADMINISTRATOR DB : %s\n", sqlite3_errmsg(db));
-       	return 1;
-    }
-   	else {
-        fprintf(stderr, "Opened ADMINISTRATOR database successfully\n");
-    }
-    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+    openDB();
 
     puts("삭제하는 데이터의 id(기본키) 입력:");
     gets(id);
@@ -1151,15 +1087,7 @@ int selInfoTable(struct InfoTable sel_it) { // case 49
     int menu; // search menu
     char tmp; // Enter Key remove
 
-    rc = sqlite3_open("ADMINISTRATOR.db", &db);
-    if(rc != SQLITE_OK) {
-        fprintf(stderr, "Can't open ADMINISTRATOR DB : %s\n", sqlite3_errmsg(db));
-       	return 1;
-    }
-   	else {
-        fprintf(stderr, "Opened ADMINISTRATOR database successfully\n");
-    }
-    sqlite3_busy_timeout(db, 500); // db open시 timeout 500ms로 설정
+    openDB();
 
     //INFO Table 출력
     sql = "select * from INFO";
