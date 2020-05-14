@@ -1,6 +1,5 @@
 #include <stdio.h>
-#include <sqlite3.h>
-#include <time.h>
+#include "sqlite3.h"
 #include <string.h>
 #include "BaseDefine.h"
 #include "DB.h"
@@ -28,7 +27,7 @@ int openDB() { // CPS.db open
     sqlite3 *db;
    	char *errmsg;
     int rc;
-    char *sql_fk; // Foreign Key 활성화 변수
+    //char *sql_fk; // Foreign Key 활성화 변수
 
     rc = sqlite3_open("CPS.db", &db);
     if(rc != SQLITE_OK) {
@@ -37,7 +36,7 @@ int openDB() { // CPS.db open
     }
 
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
-
+/*
     sql_fk = "PRAGMA foreign_keys = 1"; // Foreign Key 활성화(1) 시킴
     rc = sqlite3_exec(db, sql_fk, 0, 0, &errmsg);
     if(rc != SQLITE_OK) {
@@ -45,7 +44,7 @@ int openDB() { // CPS.db open
        	return 1;
     }
     else
-        return 0;
+        return 0; */
 }
 
 int selWhitelist(const char sel_wl[WLlen], OUT struct WhiteListTable sel_wt) { // case 46
@@ -56,7 +55,7 @@ int selWhitelist(const char sel_wl[WLlen], OUT struct WhiteListTable sel_wt) { /
    	char *errmsg;
    	char *sql; // table schema sql
     int rc;
-    char input_sql[512];
+    char input_sql[SQLlen] = { 0, };
     char whitelist[WLlen] = { 0, };
     char id[IDlen] = { 0, };
 
@@ -78,11 +77,11 @@ int selWhitelist(const char sel_wl[WLlen], OUT struct WhiteListTable sel_wt) { /
 
     int sel_wl_wl() { // case 1
         puts("search whitelist:");
-        gets(whitelist);
+        fgets(whitelist, WLlen, stdin);
 
         fflush(stdin);
-        strcpy(input_sql, "SELECT * FROM WHITELIST WHERE WHITELIST like '%");
-        strcat(input_sql, whitelist);
+        strncpy(input_sql, "SELECT * FROM WHITELIST WHERE WHITELIST like '%", SQLlen-1);
+        strncat(input_sql, whitelist, SQLlen-1);
         strcat(input_sql, "%';");
         //printf("%s\n", input_sql);
 
@@ -98,11 +97,11 @@ int selWhitelist(const char sel_wl[WLlen], OUT struct WhiteListTable sel_wt) { /
 
     int sel_wl_id() { // case 2
         puts("search id:");
-        gets(id);
+        fgets(id, IDlen, stdin);
 
         fflush(stdin);
-        strcpy(input_sql, "SELECT * FROM WHITELIST WHERE ID = '");
-        strcat(input_sql, id);
+        strncpy(input_sql, "SELECT * FROM WHITELIST WHERE ID = '", SQLlen-1);
+        strncat(input_sql, id, SQLlen-1);
         strcat(input_sql, "';");
         //printf("%s\n", input_sql);
 
@@ -174,7 +173,7 @@ int delWhiteList(char del_wl[WLlen]) { // case 36
    	char *errmsg;
     sqlite3_stmt *res;
     int rc;
-    char input_sql[512];
+    char input_sql[SQLlen] = { 0, };
     char whitelist[WLlen] = { 0, };
     char id[IDlen] = { 0, };
 
@@ -184,13 +183,13 @@ int delWhiteList(char del_wl[WLlen]) { // case 36
 
     puts("WHITELIST TABLE's records delete.\n");
     puts("input whitelist:");
-    gets(whitelist);
+    fgets(whitelist, WLlen, stdin);
     puts("input id:");
-    gets(id);
+    fgets(id, IDlen, stdin);
 
     fflush(stdin);
-    strcpy(input_sql, "DELETE from WHITELIST where whitelist = '");
-    strcat(input_sql, whitelist);
+    strncpy(input_sql, "DELETE from WHITELIST where whitelist = '", SQLlen-1);
+    strncat(input_sql, whitelist, SQLlen-1);
     strcat(input_sql, "';");
     printf("%s\n", input_sql);
     rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
@@ -213,7 +212,7 @@ int insWhiteListTable(struct WhiteListTable ins_wt) { // case 16
     sqlite3 *db;
    	char *errmsg;
     int rc;
-    char input_sql[512];
+    char input_sql[SQLlen] = { 0, };
     char whitelist[WLlen] = { 0, };
     char id[IDlen] = { 0, };
 
@@ -228,20 +227,20 @@ int insWhiteListTable(struct WhiteListTable ins_wt) { // case 16
 
     puts("WHITELIST TABLE's insert\n");
     puts("input whitelist:");
-    gets(whitelist);
+    fgets(whitelist, WLlen, stdin);
     puts("input id:");
-    gets(id);
+    fgets(id, IDlen, stdin);
     puts("date Enter:");
     printf("%s\n", str_now);
-    strcpy(date, str_now);
+    strncpy(date, str_now, DATElen);
 
     fflush(stdin);
-    strcpy(input_sql, "insert into WHITELIST values('");
-    strcat(input_sql, whitelist);
-    strcat(input_sql, "','");
-    strcat(input_sql, id);
-    strcat(input_sql, "','");
-    strcat(input_sql, date);
+    strncpy(input_sql, "insert into WHITELIST values('", SQLlen-1);
+    strncat(input_sql, whitelist, SQLlen-1);
+    strncat(input_sql, "','", SQLlen-1);
+    strncat(input_sql, id, SQLlen-1);
+    strncat(input_sql, "','", SQLlen-1);
+    strncat(input_sql, date, SQLlen-1);
     strcat(input_sql, "');");
     printf("%s\n", input_sql);
     rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
@@ -268,7 +267,7 @@ int insAdminTable(struct AdminTable ins_at) { // case 18
     sqlite3 *db;
     char *errmsg;
     int rc;
-    char input_sql[512];
+    char input_sql[SQLlen] = { 0, };
     char id[IDlen] = { 0, };
     char pwd[PWDlen] = { 0, };
     int access;
@@ -279,24 +278,24 @@ int insAdminTable(struct AdminTable ins_at) { // case 18
 
     puts("ADMIN TABLE's insert\n");
     puts("input id:");
-    gets(id);
+    fgets(id, IDlen, stdin);
     puts("input access:");
     scanf("%d", &access);
     while((tmp = getchar()) != '\n') { //엔터키 삭제 함수
         putchar(tmp);
     }
     puts("pwd:");
-    gets(pwd);
+    fgets(pwd, PWDlen, stdin);
 
     sprintf(buf_access, "%d", access); // access를 문자로 변환
 
     fflush(stdin);
-    strcpy(input_sql, "insert into ADMIN values('");
-    strcat(input_sql, id);
-    strcat(input_sql, "',");
-    strcat(input_sql, buf_access);
-    strcat(input_sql, ",'");
-    strcat(input_sql, pwd);
+    strncpy(input_sql, "insert into ADMIN values('", SQLlen-1);
+    strncat(input_sql, id, SQLlen-1);
+    strncat(input_sql, "',", SQLlen-1);
+    strncat(input_sql, buf_access, SQLlen-1);
+    strncat(input_sql, ",'", SQLlen-1);
+    strncat(input_sql, pwd, SQLlen-1);
     strcat(input_sql, "');");
     printf("%s\n", input_sql);
     rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
@@ -318,7 +317,7 @@ int insInfoTable(struct InfoTable ins_it) { // case 19
     sqlite3 *db;
     char *errmsg;
     int rc;
-    char input_sql[512];
+    char input_sql[SQLlen] = { 0, };
     char id[IDlen] = { 0, };
     char name[NAMElen] = { 0, };
     char birth[BIRTHlen] = { 0, };
@@ -339,32 +338,32 @@ int insInfoTable(struct InfoTable ins_it) { // case 19
 
     puts("\nINFO TABLE's insert\n");
     puts("input id:");
-    gets(id);
+    fgets(id, IDlen, stdin);
     puts("input name:");
-    gets(name);
+    fgets(name, NAMElen, stdin);
     puts("input birth:");
-    gets(birth);
+    fgets(birth, BIRTHlen, stdin);
     puts("input email:");
-    gets(email);
+    fgets(email, EMAILlen, stdin);
     puts("input phone:");
-    gets(phone);
+    fgets(phone, PHONElen, stdin);
     puts("date EnterKey를 누르세요:");
     printf("%s\n", str_now);
-    strcpy(date, str_now);
+    strncpy(date, str_now, DATElen);
 
     fflush(stdin);
-    strcpy(input_sql, "insert into INFO values('");
-    strcat(input_sql, id);
-    strcat(input_sql, "','");
-    strcat(input_sql, name);
-    strcat(input_sql, "','");
-    strcat(input_sql, birth);
-    strcat(input_sql, "','");
-    strcat(input_sql, email);
-    strcat(input_sql, "','");
-    strcat(input_sql, phone);
-    strcat(input_sql, "','");
-    strcat(input_sql, date);
+    strncpy(input_sql, "insert into INFO values('", SQLlen-1);
+    strncat(input_sql, id, SQLlen-1);
+    strncat(input_sql, "','", SQLlen-1);
+    strncat(input_sql, name, SQLlen-1);
+    strncat(input_sql, "','", SQLlen-1);
+    strncat(input_sql, birth, SQLlen-1);
+    strncat(input_sql, "','", SQLlen-1);
+    strncat(input_sql, email, SQLlen-1);
+    strncat(input_sql, "','", SQLlen-1);
+    strncat(input_sql, phone, SQLlen-1);
+    strncat(input_sql, "','", SQLlen-1);
+    strncat(input_sql, date, SQLlen-1);
     strcat(input_sql, "');");
     printf("%s\n", input_sql);
     rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
@@ -392,7 +391,7 @@ int updateInfoTable(struct InfoTable up_it) { // case 29
     sqlite3_stmt *res;
     int rc;
     char *sql;
-    char input_sql[512];
+    char input_sql[SQLlen] = { 0, };
     char id[IDlen] = { 0, };
     char name[NAMElen] = { 0, };
     char birth[BIRTHlen] = { 0, };
@@ -419,13 +418,13 @@ int updateInfoTable(struct InfoTable up_it) { // case 29
 
     printf("INFO TABLE's Update\n");
     puts("수정할 데이터의 id(기본키) 입력:");
-    gets(id);
+    fgets(id, IDlen, stdin);
 
     fflush(stdin);
-    strcpy(input_sql, "SELECT * FROM INFO WHERE id = '");
-    strcat(input_sql, id);
+    strncpy(input_sql, "SELECT * FROM INFO WHERE id = '", SQLlen-1);
+    strncat(input_sql, id, SQLlen-1);
     strcat(input_sql, "';");
-    //printf("%s\n", input_sql);
+    printf("%s\n", input_sql);
     printf("\nID's data :\n");
     rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
     if(rc != SQLITE_OK) {
@@ -465,17 +464,17 @@ int updateInfoTable(struct InfoTable up_it) { // case 29
         switch(menu) {
             case 1:
                 puts("name 수정:");
-                gets(name);
+                fgets(name, NAMElen, stdin);
                 printf("%s\n", str_now);
                 strcpy(date, str_now);
 
                 fflush(stdin);
-                strcpy(input_sql, "UPDATE INFO SET (name, date) = ('");
-                strcat(input_sql, name);
-                strcat(input_sql, "','");
-                strcat(input_sql, date);
-                strcat(input_sql, "') WHERE id = '");
-                strcat(input_sql, id);
+                strncpy(input_sql, "UPDATE INFO SET (name, date) = ('", SQLlen-1);
+                strncat(input_sql, name, SQLlen-1);
+                strncat(input_sql, "','", SQLlen-1);
+                strncat(input_sql, date, SQLlen-1);
+                strncat(input_sql, "') WHERE id = '", SQLlen-1);
+                strncat(input_sql, id, SQLlen-1);
                 strcat(input_sql, "';");
                 //printf("%s\n", input_sql);
 
@@ -491,19 +490,19 @@ int updateInfoTable(struct InfoTable up_it) { // case 29
 
             case 2:
                 puts("birth 수정:");
-                gets(birth);
+                fgets(birth, BIRTHlen, stdin);
                 printf("%s\n", str_now);
-                strcpy(date, str_now);
+                strncpy(date, str_now, DATElen);
 
                 fflush(stdin);
-                strcpy(input_sql, "UPDATE INFO SET (birth, date) = ('");
-                strcat(input_sql, birth);
-                strcat(input_sql, "','");
-                strcat(input_sql, date);
-                strcat(input_sql, "') WHERE id = '");
-                strcat(input_sql, id);
+                strncpy(input_sql, "UPDATE INFO SET (birth, date) = ('", SQLlen-1);
+                strncat(input_sql, birth, SQLlen-1);
+                strncat(input_sql, "','", SQLlen-1);
+                strncat(input_sql, date, SQLlen-1);
+                strncat(input_sql, "') WHERE id = '", SQLlen-1);
+                strncat(input_sql, id, SQLlen-1);
                 strcat(input_sql, "';");
-                //printf("%s\n", input_sql);
+                printf("%s\n", input_sql);
 
                 rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
                 if(rc != SQLITE_OK) {
@@ -517,19 +516,19 @@ int updateInfoTable(struct InfoTable up_it) { // case 29
 
             case 3:
                 puts("email 수정:");
-                gets(email);
+                fgets(email, EMAILlen, stdin);
                 printf("%s\n", str_now);
-                strcpy(date, str_now);
+                strncpy(date, str_now, DATElen);
 
                 fflush(stdin);
-                strcpy(input_sql, "UPDATE INFO SET (email, date) = ('");
-                strcat(input_sql, name);
-                strcat(input_sql, "','");
-                strcat(input_sql, date);
-                strcat(input_sql, "') WHERE id = '");
-                strcat(input_sql, id);
+                strncpy(input_sql, "UPDATE INFO SET (email, date) = ('", SQLlen-1);
+                strncat(input_sql, name, SQLlen-1);
+                strncat(input_sql, "','", SQLlen-1);
+                strncat(input_sql, date, SQLlen-1);
+                strncat(input_sql, "') WHERE id = '", SQLlen-1);
+                strncat(input_sql, id, SQLlen-1);
                 strcat(input_sql, "';");
-                //printf("%s\n", input_sql);
+                printf("%s\n", input_sql);
 
                 rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
                 if(rc != SQLITE_OK) {
@@ -543,19 +542,19 @@ int updateInfoTable(struct InfoTable up_it) { // case 29
 
             case 4:
                 puts("phone 수정:");
-                gets(phone);
+                fgets(phone, PHONElen, stdin);
                 printf("%s\n", str_now);
-                strcpy(date, str_now);
+                strncpy(date, str_now, DATElen);
 
                 fflush(stdin);
-                strcpy(input_sql, "UPDATE INFO SET (phone, date) = ('");
-                strcat(input_sql, phone);
-                strcat(input_sql, "','");
-                strcat(input_sql, date);
-                strcat(input_sql, "') WHERE id = '");
-                strcat(input_sql, id);
+                strncpy(input_sql, "UPDATE INFO SET (phone, date) = ('", SQLlen-1);
+                strncat(input_sql, phone, SQLlen-1);
+                strncat(input_sql, "','", SQLlen-1);
+                strncat(input_sql, date, SQLlen-1);
+                strncat(input_sql, "') WHERE id = '", SQLlen-1);
+                strncat(input_sql, id, SQLlen-1);
                 strcat(input_sql, "';");
-                //printf("%s\n", input_sql);
+                printf("%s\n", input_sql);
 
                 rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
                 if(rc != SQLITE_OK) {
@@ -586,7 +585,7 @@ int updateAdminTable(struct AdminTable up_at) { // case 28
     sqlite3_stmt *res;
     int rc;
     char *sql;
-    char input_sql[512];
+    char input_sql[SQLlen] = { 0, };
     char id[IDlen] = { 0, };
     int menu; // 수정 항목을 선택하는 변수
     char tmp; //엔터키 삭제 변수
@@ -608,15 +607,15 @@ int updateAdminTable(struct AdminTable up_at) { // case 28
     printf("ADMIN TABLE's Update\n");
 
     puts("수정할 데이터의 id(기본키) 입력:");
-    gets(id);
+    fgets(id, IDlen, stdin);
     puts("수정할 id의 PWD 입력(PWD 틀리면 종료):");
-    gets(src_pwd);
+    fgets(src_pwd, PWDlen, stdin);
 
     fflush(stdin);
-    strcpy(input_sql, "SELECT id, access FROM ADMIN WHERE pwd = '");
-    strcat(input_sql, src_pwd);
-    strcat(input_sql, "' AND id = '");
-    strcat(input_sql, id);
+    strncpy(input_sql, "SELECT id, access FROM ADMIN WHERE pwd = '", SQLlen-1);
+    strncat(input_sql, src_pwd, SQLlen-1);
+    strncat(input_sql, "' AND id = '", SQLlen-1);
+    strncat(input_sql, id, SQLlen-1);
     strcat(input_sql, "';");
     printf("%s\n", input_sql);
     rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
@@ -650,10 +649,10 @@ int updateAdminTable(struct AdminTable up_at) { // case 28
                 sprintf(buf_access, "%d", access); // access를 문자로 변환
 
                 fflush(stdin);
-                strcpy(input_sql, "UPDATE ADMIN SET access = ");
-                strcat(input_sql, buf_access);
-                strcat(input_sql, " WHERE id = '");
-                strcat(input_sql, id);
+                strncpy(input_sql, "UPDATE ADMIN SET access = ", SQLlen-1);
+                strncat(input_sql, buf_access, SQLlen-1);
+                strncat(input_sql, " WHERE id = '", SQLlen-1);
+                strncat(input_sql, id, SQLlen-1);
                 strcat(input_sql, "';");
                 printf("%s\n", input_sql);
 
@@ -669,13 +668,13 @@ int updateAdminTable(struct AdminTable up_at) { // case 28
 
             case 2:
                 puts("수정할 PWD(비밀번호)값 입력:");
-                gets(pwd);
+                fgets(pwd, PWDlen, stdin);
 
                 fflush(stdin);
-                strcpy(input_sql, "UPDATE ADMIN SET pwd = '");
-                strcat(input_sql, pwd);
-                strcat(input_sql, "' WHERE id = '");
-                strcat(input_sql, id);
+                strncpy(input_sql, "UPDATE ADMIN SET pwd = '", SQLlen-1);
+                strncat(input_sql, pwd, SQLlen-1);
+                strncat(input_sql, "' WHERE id = '", SQLlen-1);
+                strncat(input_sql, id, SQLlen-1);
                 strcat(input_sql, "';");
                 // printf("%s\n", input_sql);
 
@@ -698,15 +697,15 @@ int updateAdminTable(struct AdminTable up_at) { // case 28
                 sprintf(buf_access, "%d", access); // access를 문자로 변환
 
                 puts("수정할 PWD(비밀번호)값 입력:");
-                gets(pwd);
+                fgets(pwd, PWDlen, stdin);
 
                 fflush(stdin);
-                strcpy(input_sql, "UPDATE ADMIN SET (access, pwd) = (");
-                strcat(input_sql, buf_access);
-                strcat(input_sql, ", '");
-                strcat(input_sql, pwd);
-                strcat(input_sql, "') WHERE id = '");
-                strcat(input_sql, id);
+                strncpy(input_sql, "UPDATE ADMIN SET (access, pwd) = (", SQLlen-1);
+                strncat(input_sql, buf_access, SQLlen-1);
+                strncat(input_sql, ", '", SQLlen-1);
+                strncat(input_sql, pwd, SQLlen-1);
+                strncat(input_sql, "') WHERE id = '", SQLlen-1);
+                strncat(input_sql, id, SQLlen-1);
                 strcat(input_sql, "';");
                 // printf("%s\n", input_sql);
 
@@ -739,7 +738,7 @@ int updateAdminwl(struct WhiteListTable up_w) { // case 26
     sqlite3_stmt *res;
     int rc;
     char *sql;
-    char input_sql[512];
+    char input_sql[SQLlen] = { 0, };
     char id[IDlen] = { 0, };
 
     char src_white[WLlen] = { 0, }; // 수정할 화이트리스트 ->다른 화이트리스트로 변경됨.
@@ -764,16 +763,16 @@ int updateAdminwl(struct WhiteListTable up_w) { // case 26
 
     puts("date Enter:");
     printf("%s\n", str_now);
-    strcpy(date, str_now);
+    strncpy(date, str_now, DATElen);
 
     fflush(stdin);
-    strcpy(input_sql, "UPDATE WHITELIST SET (date, whitelist) = ('");
-    strcat(input_sql, date);
-    strcat(input_sql, "', '");
-    strcat(input_sql, whitelist);
-    strcat(input_sql, "') ");
-    strcat(input_sql, "where whitelist = '");
-    strcat(input_sql, src_white);
+    strncpy(input_sql, "UPDATE WHITELIST SET (date, whitelist) = ('", SQLlen-1);
+    strncat(input_sql, date, SQLlen-1);
+    strncat(input_sql, "', '", SQLlen-1);
+    strncat(input_sql, whitelist, SQLlen-1);
+    strncat(input_sql, "') ", SQLlen-1);
+    strncat(input_sql, "where whitelist = '", SQLlen-1);
+    strncat(input_sql, src_white, SQLlen-1);
     strcat(input_sql, "';");
     printf("%s\n", input_sql);
 
@@ -820,7 +819,7 @@ int delAdminTable(struct AdminTable del_at) { // case 38
     char *errmsg;
     sqlite3_stmt *res;
     int rc;
-    char input_sql[512];
+    char input_sql[SQLlen-1] = { 0, };
     char id[IDlen] = { 0, };
 
     char** result; // get table result
@@ -838,15 +837,15 @@ int delAdminTable(struct AdminTable del_at) { // case 38
     printf("ADMIN TABLE's Update\n");
 
     puts("삭제하는 데이터의 id(기본키) 입력:");
-    gets(id);
+    fgets(id, IDlen, stdin);
     puts("삭제하는 id의 PWD 입력(PWD 틀리면 종료):");
-    gets(del_pwd);
+    fgets(del_pwd, PWDlen, stdin);
 
     fflush(stdin);
-    strcpy(input_sql, "SELECT id, access FROM ADMIN WHERE pwd = '");
-    strcat(input_sql, del_pwd);
-    strcat(input_sql, "' AND id = '");
-    strcat(input_sql, id);
+    strncpy(input_sql, "SELECT id, access FROM ADMIN WHERE pwd = '", SQLlen-1);
+    strncat(input_sql, del_pwd, SQLlen-1);
+    strncat(input_sql, "' AND id = '", SQLlen-1);
+    strncat(input_sql, id, SQLlen-1);
     strcat(input_sql, "';");
 
     //printf("%s\n", input_sql);
@@ -863,8 +862,8 @@ int delAdminTable(struct AdminTable del_at) { // case 38
     //printf("%s\n", result[0]);  // id 와 pwd 를 정확히 입력하면 id 라고 화면에 출력됨.
     if(!strcmp(result[0], "id")) {
         fflush(stdin);
-        strcpy(input_sql, "DELETE from ADMIN where id = '");
-        strcat(input_sql, id);
+        strncpy(input_sql, "DELETE from ADMIN where id = '", SQLlen-1);
+        strncat(input_sql, id, SQLlen-1);
         strcat(input_sql, "';");
         //printf("%s\n", input_sql);
 
@@ -890,7 +889,7 @@ int selAdminTable(struct AdminTable sel_at) { // case 48
     sqlite3 *db;
     char *errmsg;
     int rc;
-    char input_sql[512];
+    char input_sql[SQLlen] = { 0, };
    	char *sql; // table schema sql
     char id[IDlen] = { 0, };
     char pwd[PWDlen] = { 0, };
@@ -916,11 +915,11 @@ int selAdminTable(struct AdminTable sel_at) { // case 48
 
     int sel_at_id() { // case 1
         puts("search id:");
-        gets(id);
+        fgets(id, IDlen, stdin);
 
         fflush(stdin);
-        strcpy(input_sql, "SELECT id, access FROM ADMIN WHERE id = '");
-        strcat(input_sql, id);
+        strncpy(input_sql, "SELECT id, access FROM ADMIN WHERE id = '", SQLlen-1);
+        strncat(input_sql, id, SQLlen-1);
         strcat(input_sql, "';");
         //printf("%s\n", input_sql);
 
@@ -943,8 +942,8 @@ int selAdminTable(struct AdminTable sel_at) { // case 48
         sprintf(buf_access, "%d", access); // access를 문자로 변환
 
         fflush(stdin);
-        strcpy(input_sql, "SELECT id, access FROM ADMIN WHERE access = ");
-        strcat(input_sql, buf_access);
+        strncpy(input_sql, "SELECT id, access FROM ADMIN WHERE access = ", SQLlen-1);
+        strncat(input_sql, buf_access, SQLlen-1);
         strcat(input_sql, ";");
         //printf("%s\n", input_sql);
 
@@ -960,15 +959,15 @@ int selAdminTable(struct AdminTable sel_at) { // case 48
 
     int sel_at_pwd() { // case 3 // int searchPWD(const char search_id[IDlen], const char seearch_pwd[PWDlen]) pwd 인증
         puts("seach pwd's ID:");
-        gets(id);
+        fgets(id, IDlen, stdin);
         puts("search pwd:");
-        gets(cmp_pwd);
+        fgets(cmp_pwd, PWDlen, stdin);
 
         fflush(stdin);
-        strcpy(input_sql, "SELECT id, access FROM ADMIN WHERE id = '");
-        strcat(input_sql, id);
-        strcat(input_sql, "' AND pwd = '");
-        strcat(input_sql, cmp_pwd);
+        strncpy(input_sql, "SELECT id, access FROM ADMIN WHERE id = '", SQLlen-1);
+        strncat(input_sql, id, SQLlen-1);
+        strncat(input_sql, "' AND pwd = '", SQLlen-1);
+        strncat(input_sql, cmp_pwd, SQLlen-1);
         strcat(input_sql, "';");
         //printf("%s\n", input_sql);
 
@@ -1024,7 +1023,7 @@ int delInfoTable(struct InfoTable del_it) { // case 39
     char *errmsg;
     int rc;
     sqlite3_stmt *res;
-    char input_sql[512];
+    char input_sql[SQLlen] = { 0, };
     char id[IDlen] = { 0, };
     char name[NAMElen] = { 0, };
     char birth[BIRTHlen] = { 0, };
@@ -1035,13 +1034,13 @@ int delInfoTable(struct InfoTable del_it) { // case 39
     openDB();
 
     puts("삭제하는 데이터의 id(기본키) 입력:");
-    gets(id);
+    fgets(id, IDlen, stdin);
 
     fflush(stdin);
-    strcpy(input_sql, "SELECT * FROM INFO WHERE id = '");
-    strcat(input_sql, id);
+    strncpy(input_sql, "SELECT * FROM INFO WHERE id = '", SQLlen-1);
+    strncat(input_sql, id, SQLlen-1);
     strcat(input_sql, "';");
-    //printf("%s\n", input_sql);
+    printf("%s\n", input_sql);
     rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
     if(rc != SQLITE_OK) {
         fprintf(stderr, "Can't print Info Table : %s\n", sqlite3_errmsg(db));
@@ -1052,10 +1051,10 @@ int delInfoTable(struct InfoTable del_it) { // case 39
     }
 
     fflush(stdin);
-    strcpy(input_sql, "DELETE from INFO where id = '");
-    strcat(input_sql, id);
+    strncpy(input_sql, "DELETE from INFO where id = '", SQLlen-1);
+    strncat(input_sql, id, SQLlen-1);
     strcat(input_sql, "';");
-    //printf("%s\n", input_sql);
+    printf("%s\n", input_sql);
     rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
     if(rc != SQLITE_OK) {
             fprintf(stderr, "Can't delete : %s\n", sqlite3_errmsg(db));
@@ -1075,7 +1074,7 @@ int selInfoTable(struct InfoTable sel_it) { // case 49
     sqlite3 *db;
     char *errmsg;
     int rc;
-    char input_sql[512];
+    char input_sql[SQLlen] = { 0, };
    	char *sql; // table schema sql
     char id[IDlen] = { 0, };
     char name[NAMElen] = { 0, };
@@ -1102,11 +1101,11 @@ int selInfoTable(struct InfoTable sel_it) { // case 49
 
     int sel_it_id() { // case 1
         puts("search id:");
-        gets(id);
+        fgets(id, IDlen, stdin);
 
         fflush(stdin);
-        strcpy(input_sql, "SELECT * FROM INFO WHERE id = '");
-        strcat(input_sql, id);
+        strncpy(input_sql, "SELECT * FROM INFO WHERE id = '", SQLlen-1);
+        strncat(input_sql, id, SQLlen-1);
         strcat(input_sql, "';");
         //printf("%s\n", input_sql);
 
@@ -1122,13 +1121,13 @@ int selInfoTable(struct InfoTable sel_it) { // case 49
 
     int sel_it_name() { // case 2
         puts("search name:");
-        gets(name);
+        fgets(name, NAMElen, stdin);
 
         fflush(stdin);
-        strcpy(input_sql, "SELECT * FROM INFO WHERE name like '%");
-        strcat(input_sql, name);
+        strncpy(input_sql, "SELECT * FROM INFO WHERE name like '%", SQLlen-1);
+        strncat(input_sql, name, SQLlen-1);
         strcat(input_sql, "%';");
-        //printf("%s\n", input_sql);
+        printf("%s\n", input_sql);
 
         rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
         if(rc != SQLITE_OK) {
@@ -1142,13 +1141,13 @@ int selInfoTable(struct InfoTable sel_it) { // case 49
 
     int sel_it_birth() { // case 3
         puts("search birth:");
-        gets(birth);
+        fgets(birth, BIRTHlen, stdin);
 
         fflush(stdin);
-        strcpy(input_sql, "SELECT * FROM INFO WHERE birth like '%");
-        strcat(input_sql, birth);
+        strncpy(input_sql, "SELECT * FROM INFO WHERE birth like '%", SQLlen-1);
+        strncat(input_sql, birth, SQLlen-1);
         strcat(input_sql, "%';");
-        //printf("%s\n", input_sql);
+        printf("%s\n", input_sql);
 
         rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
         if(rc != SQLITE_OK) {
@@ -1162,13 +1161,13 @@ int selInfoTable(struct InfoTable sel_it) { // case 49
 
     int sel_it_email() { // case 4
         puts("search email:");
-        gets(email);
+        fgets(email, EMAILlen, stdin);
 
         fflush(stdin);
-        strcpy(input_sql, "SELECT * FROM INFO WHERE email like '%");
-        strcat(input_sql, email);
+        strncpy(input_sql, "SELECT * FROM INFO WHERE email like '%", SQLlen-1);
+        strncat(input_sql, email, SQLlen-1);
         strcat(input_sql, "%';");
-        //printf("%s\n", input_sql);
+        printf("%s\n", input_sql);
 
         rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
         if(rc != SQLITE_OK) {
@@ -1182,13 +1181,13 @@ int selInfoTable(struct InfoTable sel_it) { // case 49
 
     int sel_it_phone() { // case 5
         puts("search phone:");
-        gets(phone);
+        fgets(phone, PHONElen, stdin);
 
         fflush(stdin);
-        strcpy(input_sql, "SELECT * FROM INFO WHERE phone like '%");
-        strcat(input_sql, phone);
+        strncpy(input_sql, "SELECT * FROM INFO WHERE phone like '%", SQLlen-1);
+        strncat(input_sql, phone, SQLlen-1);
         strcat(input_sql, "%';");
-        //printf("%s\n", input_sql);
+        printf("%s\n", input_sql);
 
         rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
         if(rc != SQLITE_OK) {

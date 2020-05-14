@@ -1,3 +1,7 @@
+#ifndef DB_H
+#define DB_H
+
+#define SQLlen 512 // input_sql
 #define WLlen 31
 #define IDlen 10
 #define DATElen 20
@@ -31,6 +35,7 @@ struct AdminTable {
 
 struct InfoTable {
     char id[IDlen];
+    int access;
     char name[NAMElen];
     char birth[BIRTHlen];
     char email[EMAILlen];
@@ -54,3 +59,5 @@ struct InsInfo {
 enum Account {
     Robot, CPS, Root
 };
+
+#endif
