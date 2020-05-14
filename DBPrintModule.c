@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include "BaseDefine.h"
 #include "DB.h"
 #include <stdlib.h>
 #include "DBManagement.h"
