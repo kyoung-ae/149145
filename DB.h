@@ -2,15 +2,16 @@
 #define DB_H
 
 #define SQLlen 512 // input_sql
+#define ACCESSlen 2 // int형의 access값을 문자로 받기 위한 변수 크기 -> 크기를 1로 했더니 id[0]을 null로 덮어쓰는 참사 발생 ㅠㅠ
 #define WLlen 31
 #define IDlen 10
-#define DATElen 20
+#define DATElen 21
 #define PKlen 271
 #define MAClen 18
-#define PWDlen 513
-#define NAMElen 30
-#define EMAILlen 50
-#define PHONElen 20
+#define PWDlen 514
+#define NAMElen 31
+#define EMAILlen 51
+#define PHONElen 21
 #define BIRTHlen 7
 
 struct WhiteListTable {
@@ -35,7 +36,6 @@ struct AdminTable {
 
 struct InfoTable {
     char id[IDlen];
-    int access;
     char name[NAMElen];
     char birth[BIRTHlen];
     char email[EMAILlen];
