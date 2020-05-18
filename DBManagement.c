@@ -1,9 +1,11 @@
+#define _CTR_SECURE_NO_WARNINGS
+
 #include <stdio.h>
 #include "sqlite3.h"
 #include <string.h>
 #include "BaseDefine.h"
 #include "DB.h"
-
+/*
 static int callback(void *NotUsed, int argc, char **argv, char **azColName) { // callback
     int i;
     for(i = 0; i < argc; i++) {
@@ -36,15 +38,15 @@ int openDB() { // CPS.db open
     }
 
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
-/*
-    sql_fk = "PRAGMA foreign_keys = 1"; // Foreign Key 활성화(1) 시킴
-    rc = sqlite3_exec(db, sql_fk, 0, 0, &errmsg);
-    if(rc != SQLITE_OK) {
-       	fprintf(stderr, "참조키 활성화 에러 : %s\n", sqlite3_errmsg(db));
-       	return 1;
-    }
-    else
-        return 0; */
+
+    //sql_fk = "PRAGMA foreign_keys = 1"; // Foreign Key 활성화(1) 시킴
+    //rc = sqlite3_exec(db, sql_fk, 0, 0, &errmsg);
+    //if(rc != SQLITE_OK) {
+    //   	fprintf(stderr, "참조키 활성화 에러 : %s\n", sqlite3_errmsg(db));
+    //   	return 1;
+    //}
+    //else
+    //    return 0;
 }
 
 int selWhitelist(const char sel_wl[WLlen], OUT struct WhiteListTable sel_wt) { // case 46
@@ -447,7 +449,7 @@ int updateInfoTable(struct InfoTable up_it) { // case 29
 
     //strcpy(metatype, result[(i * col)]);
     //printf("%s", metatype);
-
+/*
     if(!strcmp(result[0], "id")) {
         void Itmenu() { // INFO table menu
             printf("1. NAME\n");
@@ -1243,3 +1245,4 @@ int selInfoTable(struct InfoTable sel_it) { // case 49
 
     return 0;
 }
+*/
