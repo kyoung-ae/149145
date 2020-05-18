@@ -1,17 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include "sqlite3.h"
-#include "BaseDefine.h"
 #include "DB.h"
-
-static int callback(void *NotUsed, int argc, char **argv, char **azColName) {
-    int i;
-    for(i = 0; i < argc; i++) {
-        printf("%s = %s\n", azColName[i], argv[i] ? argv[i]:"NULL");
-    }
-    printf("\n");
-
-    return 0;
-}
+#include "BaseDefine.h"
 
 int createDB() {
     sqlite3 *db;
@@ -29,7 +20,7 @@ int createDB() {
         fprintf(stderr, "=CPS.db open=\n");
     }
 
-    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+    sqlite3_busy_timeout(db, 1000); //db open시 timeout 500ms로 설정
 
 /*
     sql_fk = "PRAGMA foreign_keys = 1"; // Foreign Key 활성화(1) 시킴
@@ -44,9 +35,9 @@ int createDB() {
 
     //admin table create
    	sql = "CREATE TABLE ADMIN ("\
-        "id TEXT(9) PRIMARY KEY NOT NULL,"\
+        "id TEXT(10) PRIMARY KEY NOT NULL,"\
         "access INT(1),"\
-        "pwd TEXT(513));";
+        "pwd TEXT(514));";
     rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
     if(rc != SQLITE_OK) {
        	fprintf(stderr, "Can't create ADMIN table : %s\n", sqlite3_errmsg(db));
@@ -58,13 +49,13 @@ int createDB() {
 
     //mac table create
     sql = "CREATE TABLE MAC ("\
-        "id TEXT(9) PRIMARY KEY NOT NULL,"\
-        "public_key TEXT(270),"\
-        "mac0 TEXT(17) NOT NULL,"\
-        "mac1 TEXT(17),"\
-        "mac2 TEXT(17));";
+        "id TEXT(10) PRIMARY KEY NOT NULL,"\
+        "public_key TEXT(271),"\
+        "mac0 TEXT(18) NOT NULL,"\
+        "mac1 TEXT(18),"\
+        "mac2 TEXT(18));";
         /*
-        "mac2 TEXT(17),"\
+        "mac2 TEXT(18),"\
         "CONSTRAINT id FOREIGN KEY(id) REFERENCES ADMIN(id));";
         */
     rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
@@ -78,14 +69,14 @@ int createDB() {
 
    	//info table create
    	sql = "CREATE TABLE INFO ("\
-        "id TEXT(9) PRIMARY KEY NOT NULL,"\
-        "name TEXT(30),"\
-        "birth TEXT(6),"\
-        "email TEXT(50),"\
-        "phone TEXT(20),"\
-        "date TEXT(12));";
+        "id TEXT(10) PRIMARY KEY NOT NULL,"\
+        "name TEXT(31),"\
+        "birth TEXT(7),"\
+        "email TEXT(51),"\
+        "phone TEXT(21),"\
+        "date TEXT(21));";
         /*
-        "date TEXT(12),"\
+        "date TEXT(21),"\
         "CONSTRAINT id FOREIGN KEY(id) REFERENCES ADMIN(id));";
         */
     rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
@@ -99,11 +90,11 @@ int createDB() {
 
     //whitelist table create
     sql = "CREATE TABLE WHITELIST ("\
-        "whitelist TEXT(30) PRIMARY KEY NOT NULL,"\
-        "id TEXT(9) NOT NULL,"\
-        "date TEXT(12));";
+        "whitelist TEXT(31) PRIMARY KEY NOT NULL,"\
+        "id TEXT(10) NOT NULL,"\
+        "date TEXT(21));";
         /*
-        "date TEXT(12),"\
+        "date TEXT(20),"\
         "CONSTRAINT id FOREIGN KEY(id) REFERENCES ADMIN(id));";
         */
    	rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
