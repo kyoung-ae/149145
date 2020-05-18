@@ -3,7 +3,7 @@
 
 #include "DB.h"
 
-void printMenu(int pr_menu);
+void printMenu();
 void printWhiteListResult(struct WhiteListTable pr_wt);
 void printAdminResult(struct InsInfo pr_i);
 
