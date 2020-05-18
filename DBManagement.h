@@ -3,7 +3,7 @@
 
 #include "DB.h"
 #include "BaseDefine.h"
-
+/*
 static int callback(void *NotUsed, int argc, char **argv, char **azColName); // callback
 char *dateNow(struct tm *t); // date 가져오는 함수
 int openDB(); // CPS.DB open
@@ -29,5 +29,5 @@ int delAdminTable(struct AdminTable del_at); // case 38
 int selAdminTable(struct AdminTable sel_at); // case 48
 int delInfoTable(struct InfoTable del_it); // case 39
 int selInfoTable(struct InfoTable sel_it); // case 49
-
+*/
 #endif
