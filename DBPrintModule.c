@@ -3,14 +3,14 @@
 #include "DB.h"
 #include <stdlib.h>
 #include "DBManagement.h"
+#include "DBManage.h"
 
-void printMenu(int pr_menu) {
+void printMenu() {
     int tb = 0;
     int func = 0;
     int menu = 0;
 
-    char tmp; // 엔터키 삭제 변수
-
+    /*
     const char sel_wl[WLlen]; //OUT struct WhiteListTable sel_wt; // case 46
     const char sel_id[IDlen]; //OUT struct InfoTable sel_it; // case 48 & 49 참고
     const char sel_pwd[PWDlen]; //OUT char sel_pk[PKlen];
@@ -33,6 +33,7 @@ void printMenu(int pr_menu) {
     struct AdminTable sel_at; // case 48
     struct InfoTable del_it; // case 39
     struct InfoTable sel_it; // case 49
+    */
 
     printf("Select Number\n");
     printf("1 : 등록 (insert)\n");
@@ -42,9 +43,102 @@ void printMenu(int pr_menu) {
     printf("0 : EXIT\n");
     printf("input :");
     scanf("%d", &func);
-    if(func == 0) // 사용자가 0:EXIT 선택하면 종료
-        exit(0);
 
+    switch(func) { // 1, 2, 3, 4를 제외한 수를 선택하면 종료
+        case 1:
+            break;
+        case 2:
+            break;
+        case 3:
+            break;
+        case 4:
+            break;
+        default:
+            exit(0);
+            break;
+    }
+
+    printf("\nSelect Number\n");
+    printf("6 : id(사원번호), 접근권한, 비밀번호 (=>Admin tbl)\n");
+    printf("7 : 공개키, MAC (=>MAC tbl)\n");
+    printf("8 : 사원 정보 - 이름, 생년월일, 이메일, 전화번호 (=>Info tbl)\n");
+    printf("9 : 허용 명령어 목록 (=>Whitelist tbl)\n");
+    printf("0 : EXIT\n");
+    printf("input : ");
+    scanf("%d", &tb);
+    menu =  func*10 + tb;
+    removeEnter();
+
+    switch(menu) {
+        case 16:
+            inADMIN();
+            break;
+
+        case 17:
+            inMAC();
+            break;
+
+        case 18:
+            inINFO();
+            break;
+
+        case 19:
+            inWL();
+            break;
+
+        case 26:
+            upADMIN();
+            break;
+
+        case 27:
+            upMAC();
+            break;
+
+        case 28:
+            upINFO();
+            break;
+
+        case 29:
+            upWL();
+            break;
+
+        case 36:
+            delADMIN();
+            break;
+
+        case 37:
+            delMAC();
+            break;
+
+        case 38:
+            delINFO();
+            break;
+
+        case 39:
+            delWL();
+            break;
+
+        case 46:
+            selADMIN();
+            break;
+
+        case 47:
+            selMAC();
+            break;
+
+        case 48:
+            selINFO();
+            break;
+
+        case 49:
+            selWL();
+            break;
+
+       default :
+           break;
+    }
+
+/*
     printf("\nSelect Number\n");
     printf("6 : 허용 명령어 목록 (Whitelist tbl)\n");
     printf("7 : 공개키, MAC (MAC tbl)\n");
@@ -135,6 +229,7 @@ void printMenu(int pr_menu) {
        default :
            break;
     }
+    */
 }
 
 void printWhiteListResult(struct WhiteListTable pr_wt) {
