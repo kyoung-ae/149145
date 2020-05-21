@@ -32,7 +32,7 @@ struct MACTable {
 };
 
 struct AdminTable {
-    char idp[IDlen];
+    char id[IDlen];
     char access[ACCESSlen];
     char pwd[PWDlen];
 };
