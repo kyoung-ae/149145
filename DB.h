@@ -12,7 +12,7 @@
 #define NAMElen 31
 #define EMAILlen 51
 #define PHONElen 21
-#define BIRTHlen 7
+#define BIRTHlen 9
 
 struct WhiteListTable {
     char whitelist[WLlen];
