@@ -50,7 +50,7 @@ int checkDate(int date) { // 입력받은 날짜의 유효성 검사-> 1이면 �
 	yyyy = date / 10000;
     mm = (date-(yyyy*10000)) / 100;
 	dd = date % 100 ;
-	printf("\n%d년 %d월 %d일\n", yyyy, mm, dd);
+	printf("%d년 %d월 %d일\n", yyyy, mm, dd);
 
 	if(yyyy <= 1000)
 		return 0;
@@ -88,6 +88,10 @@ int hintIDPWD() { // id, pwd 분실시 지원 기능을 위한 관리자 정보�
 
 }
 
+int checkIDPWD(char id[], char pwd[]) { // 수정이나 삭제 시 id와 pwd로 검증
+
+}
+
 int inADMIN() { // case 16 ok
     sqlite3 *db;
     char *errmsg;
@@ -112,35 +116,47 @@ int inADMIN() { // case 16 ok
 
     puts("\nADMIN TABLE's insert\n");
 
-    while(1) {
+    while(1) { // id 필수로 입력받음
         printf("ID는 등록 후에 수정이 불가능합니다!!!\n");
+        printf("ID는 필수입력 정보입니다.\n");
         puts("input id (9bytes 보다 길면 다시 입력함):");
         gets(str);
+
+        if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
+            continue;
         strsize = strlen(str)+1;
         if(strsize <= IDlen)
             break;
+
         printBOF_gets(str, strsize, IDlen);
     }
     strncpy(id, str, IDlen-1);
 
-    while(1) {
+    while(1) { // access 입력받음
         printf("ACCESS는 수정이 가능합니다.\n");
         puts("input access (1byte 보다 길면 다시 입력함):");
         gets(str);
+
         strsize = strlen(str)+1;
         if(strsize <= ACCESSlen)
             break;
+
         printBOF_gets(str, strsize, ACCESSlen);
     }
     strncpy(access, str, ACCESSlen-1);
 
-    while(1) {
+    while(1) { // pwd 필수로 입력받음
         printf("PWD는 수정이 가능합니다.\n");
+        printf("PWD는 필수입력 정보입니다.\n");
         puts("input pwd (513bytes 보다 길면 다시 입력함):");
         gets(str);
+
+        if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
+            continue;
         strsize = strlen(str)+1;
         if(strsize <= PWDlen)
             break;
+
         printBOF_gets(str, strsize, PWDlen);
     }
     strncpy(pwd, str, PWDlen-1);
@@ -172,7 +188,7 @@ int inMAC() { // case 17 // 통신과 연결해야해서 작성 못함
 
 }
 
-int inINFO() { // case 18
+int inINFO() { // case 18 ok
     sqlite3 *db;
     char *errmsg;
     int rc;
@@ -187,6 +203,12 @@ int inINFO() { // case 18
     char str[MAX] = { 0, }; // 사용자에게 입력받은 임시 문자열
 
     int b_date = 0; // birth 문자열을 정수형으로 받을 변수
+
+    int i = 0;
+    int pos_at = 0; // email 문자열의 @ 위치
+    int pos_dot = 0; // email 문자열의 . 위치
+
+    int p_number = 0; // phone 문자열이 숫자가 아닐 때마다 1씩 증가되는 변수
 
     struct tm *t;
     time_t now;
@@ -211,12 +233,14 @@ int inINFO() { // case 18
 
     puts("\nINFO TABLE's insert\n");
 
-    while(1) {
+    while(1) { // id 입력받음
         puts("input id (9bytes 보다 길면 다시 입력함):");
         gets(str);
+
         strsize = strlen(str)+1;
         if(strsize <= IDlen)
             break;
+
         printBOF_gets(str, strsize, IDlen);
     }
     strncpy(id, str, IDlen-1);
@@ -227,9 +251,14 @@ int inINFO() { // case 18
         printf("등록을 건너띄려면 바로 EnterKey를 누르세요.\n");
         puts("input name (30bytes 보다 길면 다시 입력함):");
         gets(str);
+
+        str[0] == '\n'; // EnterKey를 누르면 무한푸프 탈출
+            break;
         strsize = strlen(str)+1;
+
         if(strsize <= NAMElen)
             break;
+
         printBOF_gets(str, strsize, NAMElen);
     }
     strncpy(name, str, NAMElen-1);
@@ -240,7 +269,11 @@ int inINFO() { // case 18
         printf("등록을 건너띄려면 바로 EnterKey를 누르세요.\n");
         puts("input birth (yyyymmdd 8개 유효 날짜(숫자)가 아니면 다시 입력함):");
         gets(str);
+
+        str[0] == '\0'; // EnterKey를 누르면 무한푸프 탈출
+            break;
         strsize = strlen(str)+1;
+
         if(strsize == BIRTHlen) {
             b_date = atoi(str);
             if(checkDate(b_date) == 1) // 1이면 참(유효날짜)
@@ -250,22 +283,72 @@ int inINFO() { // case 18
                 continue;
             }
         }
+
         else
             printf("yyyymmdd 8개의 유효 날짜(숫자)로 입력해야 합니다!\n");
     }
     strncpy(birth, str, BIRTHlen-1);
 
-    puts("input email(50글자까지 입력 가능):");
-    fgets(email, EMAILlen, stdin);
-    strsize = strlen(email)+1;
-    if(strsize > EMAILlen)
+    while(1) { // 이메일 : @는 [1] ~ [끝-2] && .은 [@위치+2] ~ [끝]
+        printf("\n지금 입력하는 정보는 id, pwd 분실 시 확인 정보로 사용됩니다!!!\n");
+        printf("EMAIL은 수정이 가능합니다.\n");
+        printf("등록을 건너띄려면 바로 EnterKey를 누르세요.\n");
+        puts("input email (50bytes 보다 길면 다시 입력함):");
+        gets(str);
 
+        if(str[0] == '\0') // EnterKey를 누르면 무한루프 탈출
+            break;
+        if(strsize > EMAILlen) {
+            printBOF_gets(str, strsize, EMAILlen);
+            continue;
+        }
 
-    puts("input phone(20글자까지 입력 가능):");
-    fgets(phone, PHONElen, stdin);
-    strsize = strlen(phone)+1;
-    if(strsize > PHONElen)
+        for(i = 0; i < strsize; i++) { // 입력받은 이메일의 한 글자씩 확인하는 루프
+            if(i > 0 && str[i] == '@') // @는 맨 앞에 올 수 없음
+                pos_at = i+1;
+            if(i > pos_at && str[i] =='.') // .은 @+1 보다 뒤에 있음
+                pos_dot = i+1;
+        }
 
+        if(pos_at > 0 && pos_dot > 3 && pos_dot < i) // @는 맨 앞이면 안됨 && .은 4번째~끝(i) 사이
+            break;
+        else {
+            printf("이메일 형식 -@-.- 에 맞지 않습니다!\n");
+            continue;
+        }
+    }
+    strncpy(email, str, EMAILlen-1);
+
+    while(1) { // 전화번호는 자연수만 입력 가능
+        printf("\n지금 입력하는 정보는 id, pwd 분실 시 확인 정보로 사용됩니다!!!\n");
+        printf("PHONE 번호는 수정이 가능합니다.\n");
+        printf("등록을 건너띄려면 바로 Enter를 누르고, 등록을 원하면 2 ~ 20개의 수를 입력하세요.\n");
+        printf("-표시 없이 숫자만 입력하세요.\n");
+        puts("input phone (20bytes 보다 길면 다시 입력함):");
+        gets(str);
+        if(str[0] == '\0') // EnterKey를 누르면 무한루프 탈출
+            break;
+        strsize = strlen(str)+1;
+        if(strsize > PHONElen) {
+            printBOF_gets(str, strsize, PHONElen);
+            continue;
+        }
+
+        if(strsize < 3) { // 숫자 1개만 입력하면 반복
+            printf("최소 2개의 숫자를 입력하세요!!!\n");
+            continue;
+        }
+
+        for(p_number = 0, i = 0; i < strsize; i++) { // 입력받은 이메일의 한 글자씩 확인하는 루프
+            if((str[i] < '0') || (str[i] > '9')) // 숫자가 아닌 문자가 입력된 경우 반복
+                p_number++; // 숫자가 아니면 p_number 변수 값에 1을 더함
+            else
+                p_number = 0;
+        }
+        if(p_number == 1) // 전화번호가 길이제한을 넘기지 않고, 모두 숫자로만 입력된 경우는 무한루프 탈출
+            break;
+    }
+    strncpy(phone, str, PHONElen-1);
 
     puts("EnterKey를 누르세요.");
     printf("%s\n", str_now);
@@ -299,7 +382,7 @@ int inINFO() { // case 18
     return 0;
 }
 
-int inWL() { // case 19
+int inWL() { // case 19 ok
     sqlite3 *db;
    	char *errmsg;
     int rc;
@@ -328,17 +411,38 @@ int inWL() { // case 19
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
     puts("WHITELIST TABLE's insert\n");
-    puts("input whitelist(30글자까지 입력 가능):");
-    fgets(whitelist, WLlen, stdin);
-    strsize = strlen(whitelist)+1;
-    if(strsize > WLlen)
-        //secuBOF_gets(whitelist, strsize, WLlen);
 
-    puts("input id(9글자까지 입력 가능):");
-    fgets(id, IDlen, stdin);
-    strsize = strlen(id)+1;
-    if(strsize > IDlen)
-        //secuBOF_gets(id, strsize, IDlen);
+    while(1) { // whitelist 필수로 입력받음
+        printf("whitelist는 등록 후에 수정이 불가능합니다!!!\n");
+        printf("whitelist는 필수입력 정보입니다.\n");
+        puts("input whitelis (30bytes 보다 길면 다시 입력함):");
+        gets(str);
+
+        if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
+            continue;
+        strsize = strlen(str)+1;
+        if(strsize <= WLlen)
+            break;
+
+        printBOF_gets(str, strsize, WLlen);
+    }
+    strncpy(whitelist, str, WLlen-1);
+
+    while(1) { // id 필수로 입력받음
+        printf("ID는 등록 후에 수정이 불가능합니다!!!\n");
+        printf("ID는 필수입력 정보입니다.\n");
+        puts("input id (9bytes 보다 길면 다시 입력함):");
+        gets(str);
+
+        if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
+            continue;
+        strsize = strlen(str)+1;
+        if(strsize <= IDlen)
+            break;
+
+        printBOF_gets(str, strsize, IDlen);
+    }
+    strncpy(id, str, IDlen-1);
 
     puts("EnterKey를 누르세요.");
     printf("%s\n", str_now);
@@ -361,16 +465,15 @@ int inWL() { // case 19
     else {
         fprintf(stderr, "Print input successfully\n");
     }
-
     sqlite3_close(db);
 
     return 0;
 }
 
-int upADMIN() { // case 26
+int upADMIN() { // case 26 ok
     sqlite3 *db;
     char *errmsg;
-    sqlite3_stmt *res;
+    const char *NotUsed;
     int rc;
     char *sql;
     char input_sql[SQLlen] = { 0, };
@@ -384,7 +487,9 @@ int upADMIN() { // case 26
     int row, col; // get table row,column
 
     char src_pwd[PWDlen] = { 0, }; // 수정할 PWD -> 다른 PWD로 변경됨.
-    char pwd[PWDlen] = { 0, };
+    char pwd[PWDlen] = { 0, }; // 수정 완료된 PWD
+
+    char sql_ua[SQLlen] = { 0, }; // 업데이트 실행 sql
 
     // CPS.db OPEN
     rc = sqlite3_open("CPS.db", &db);
@@ -397,29 +502,45 @@ int upADMIN() { // case 26
     }
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
-    res = "Callback Function Called";
+    NotUsed = "Callback Function Called";
 
     printf("ADMIN TABLE's Update\n");
 
-    puts("수정할 데이터의 id(기본키) 입력:");
-    fgets(id, IDlen, stdin);
-    strsize = strlen(id)+1;
-    if(strsize > IDlen)
-        //secuBOF_gets(id, strsize, IDlen);
+   while(1) { // 수정하려는 데이터의 id
+        puts("수정할 데이터의 id(기본키) 입력:");
+        gets(str);
 
-    puts("수정할 id의 PWD 입력(PWD 틀리면 종료):");
-    fgets(src_pwd, PWDlen, stdin);
-    strsize = strlen(pwd)+1;
-    if(strsize > PWDlen)
-        //secuBOF_gets(pwd, strsize, PWDlen);
+        if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
+            continue;
+        strsize = strlen(str)+1;
+        if(strsize <= IDlen)
+            break;
 
-    fflush(stdin);
+        printBOF_gets(str, strsize, IDlen);
+    }
+    strncpy(id, str, IDlen-1);
+
+    while(1) { // 수정하려는 데이터 id의 pwd
+        puts("수정할 데이터 id의 원래 PWD 입력(PWD 틀리면 종료):");
+        gets(str);
+
+        if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
+            continue;
+        strsize = strlen(str)+1;
+        if(strsize <= PWDlen)
+            break;
+
+        printBOF_gets(str, strsize, PWDlen);
+    }
+    strncpy(src_pwd, str, PWDlen-1);
+
+    __fpurge(stdin);
     strncpy(input_sql, "SELECT id, access FROM ADMIN WHERE pwd = '", 42);
     strncat(input_sql, src_pwd, PWDlen-1);
     strncat(input_sql, "' AND id = '", 12);
     strncat(input_sql, id, IDlen-1);
     strncat(input_sql, "';", 2);
-    printf("%s\n", input_sql);
+    //printf("%s\n", input_sql);
     rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
     if(rc != SQLITE_OK) {
         fprintf(stderr, "Can't print Admin Table : %s\n", sqlite3_errmsg(db));
@@ -432,30 +553,39 @@ int upADMIN() { // case 26
     rc = sqlite3_get_table(db, input_sql, &result, &row, &col, &errmsg);
     //printf("%s\n", result[0]);  // id 와 pwd 를 원래 정보와 동일하게 입력하면 id 라고 화면에 출력됨.
 
-    if(!strcmp(result[0], "id")) {
+    if(!strcmp(result[0], "id")) { // 사용자가 입력한 id&pwd 동일한 경우에 실행되는 수정 기능
         printf("1. ACCESS(권한)만 수정\n");
         printf("2. PWD(비밀번호)만 수정\n");
         printf("3. ACCESS(권한)과 PWD(비밀번호) 모두 수정\n");
         puts("input number:");
         scanf("%d", &menu);
         removeEnter();
+
         switch(menu) {
             case 1:
-                printf("수정할 ACCESS(권한)값 입력:\n");
-                fgets(access, ACCESSlen, stdin);
-                strsize = strlen(access)+1;
-                if(strsize > ACCESSlen)
-                //secuBOF_gets(access, strsize, ACCESSlen);
+                while(1) { // 수정하려는 id의 access 수정
+                    printf("ACCESS(권한) 변경 값 입력:\n");
+                    gets(str);
 
-                fflush(stdin);
-                strncpy(input_sql, "UPDATE ADMIN SET access = '", 27);
-                strncat(input_sql, access, ACCESSlen-1);
-                strncat(input_sql, "' WHERE id = '", 14);
-                strncat(input_sql, id, IDlen-1);
-                strncat(input_sql, "';", 2);
-                printf("%s\n", input_sql);
+                    if(str[0] == '\n' || str[0] == '\0') // 수정하려는 정보는 null 불가
+                        continue;
+                    strsize = strlen(str)+1;
+                    if(strsize <= ACCESSlen)
+                        break;
 
-                rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
+                    printBOF_gets(str, strsize, ACCESSlen);
+                }
+                strncpy(access, str, ACCESSlen-1);
+
+                __fpurge(stdin);
+                strncpy(sql_ua, "UPDATE ADMIN SET access = '", 27);
+                strncat(sql_ua, access, ACCESSlen-1);
+                strncat(sql_ua, "' WHERE id = '", 14);
+                strncat(sql_ua, id, IDlen-1);;
+                strncat(sql_ua, "';", 2);
+                printf("%s\n", sql_ua);
+
+                rc = sqlite3_exec(db, sql_ua, callback, NotUsed, &errmsg);
                 if(rc != SQLITE_OK) {
                     fprintf(stderr, "Can't Access Update : %s\n", sqlite3_errmsg(db));
                     return 1;
@@ -466,21 +596,29 @@ int upADMIN() { // case 26
                 break;
 
             case 2:
-                puts("수정할 PWD(비밀번호)값 입력:");
-                fgets(src_pwd, PWDlen, stdin);
-                strsize = strlen(pwd)+1;
-                if(strsize > PWDlen)
-                    //secuBOF_gets(pwd, strsize, PWDlen);
+                while(1) { // 수정하려는 id의 pwd 수정
+                    puts("PWD(비밀번호) 변경 값 입력:");
+                    gets(str);
 
-                fflush(stdin);
-                strncpy(input_sql, "UPDATE ADMIN SET pwd = '", 24);
-                strncat(input_sql, pwd, PWDlen-1);
-                strncat(input_sql, "' WHERE id = '", 14);
-                strncat(input_sql, id, IDlen-1);
-                strncat(input_sql, "';", 2);
-                printf("%s\n", input_sql);
+                    if(str[0] == '\n' || str[0] == '\0') // 수정하려는 정보는 null 불가
+                        continue;
+                    strsize = strlen(str)+1;
+                    if(strsize <= PWDlen)
+                        break;
 
-                rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
+                    printBOF_gets(str, strsize, PWDlen);
+                }
+                strncpy(pwd, str, PWDlen-1);
+
+                __fpurge(stdin);
+                strncpy(sql_ua, "UPDATE ADMIN SET pwd = '", 24);
+                strncat(sql_ua, pwd, PWDlen-1);
+                strncat(sql_ua, "' WHERE id = '", 14);
+                strncat(sql_ua, id, IDlen-1);
+                strncat(sql_ua, "';", 2);
+                //printf("%s\n", sql_ua);
+
+                rc = sqlite3_exec(db, sql_ua, callback, NotUsed, &errmsg);
                 if(rc != SQLITE_OK) {
                     fprintf(stderr, "Can't PWD Update : %s\n", sqlite3_errmsg(db));
                     return 1;
@@ -491,29 +629,45 @@ int upADMIN() { // case 26
                 break;
 
             case 3:
-                printf("수정할 ACCESS(권한)값 입력:\n");
-                fgets(access, ACCESSlen, stdin);
-                strsize = strlen(access)+1;
-                if(strsize > ACCESSlen)
-                //secuBOF_gets(access, strsize, ACCESSlen);
+                while(1) { // 수정하려는 id의 access 수정
+                    printf("ACCESS(권한) 변경 값 입력:\n");
+                    gets(str);
 
-                puts("수정할 PWD(비밀번호)값 입력:");
-                fgets(src_pwd, PWDlen, stdin);
-                strsize = strlen(pwd)+1;
-                if(strsize > PWDlen)
-                    //secuBOF_gets(pwd, strsize, PWDlen);;
+                    if(str[0] == '\n' || str[0] == '\0') // 수정하려는 정보는 null 불가
+                        continue;
+                    strsize = strlen(str)+1;
+                    if(strsize <= ACCESSlen)
+                        break;
 
-                fflush(stdin);
-                strncpy(input_sql, "UPDATE ADMIN SET (access, pwd) = ('", 35);
-                strncat(input_sql, access, ACCESSlen-1);
-                strncat(input_sql, "', '", 4);
-                strncat(input_sql, pwd, PWDlen-1);
-                strncat(input_sql, "') WHERE id = '", 15);
-                strncat(input_sql, id, IDlen-1);
-                strncat(input_sql, "';", 2);
-                printf("%s\n", input_sql);
+                    printBOF_gets(str, strsize, ACCESSlen);
+                }
+                strncpy(access, str, ACCESSlen-1);
 
-                rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
+                while(1) { // 수정하려는 id의 pwd 수정
+                    puts("PWD(비밀번호) 변경 값 입력:");
+                    gets(str);
+
+                    if(str[0] == '\n' || str[0] == '\0') // 수정하려는 정보는 null 불가
+                        continue;
+                    strsize = strlen(str)+1;
+                    if(strsize <= PWDlen)
+                        break;
+
+                    printBOF_gets(str, strsize, PWDlen);
+                }
+                strncpy(pwd, str, PWDlen-1);
+
+                __fpurge(stdin);
+                strncpy(sql_ua, "UPDATE ADMIN SET (access, pwd) = ('", 35);
+                strncat(sql_ua, access, ACCESSlen-1);
+                strncat(sql_ua, "', '", 4);
+                strncat(sql_ua, pwd, PWDlen-1);
+                strncat(sql_ua, "') WHERE id = '", 15);
+                strncat(sql_ua, id, IDlen-1);
+                strncat(sql_ua, "';", 2);
+                //printf("%s\n", sql_ua);
+
+                rc = sqlite3_exec(db, sql_ua, callback, NotUsed, &errmsg);
                 if(rc != SQLITE_OK) {
                     fprintf(stderr, "Can't Access & PWD Update : %s\n", sqlite3_errmsg(db));
                     return 1;
@@ -528,7 +682,6 @@ int upADMIN() { // case 26
         }
     }
     sqlite3_free_table(result);
-
     sqlite3_close(db);
 
     return 0;
@@ -541,7 +694,7 @@ int upMAC() { // case 27
 int upINFO() { // case 28
     sqlite3 *db;
    	char *errmsg;
-    sqlite3_stmt *res;
+    const char *NotUsed;
     int rc;
     char *sql;
     char input_sql[SQLlen] = { 0, };
@@ -557,8 +710,9 @@ int upINFO() { // case 28
     char tmp; //엔터키 삭제 변수
 
     char** result; // get table result
-    int i, j, row, col; // get table row,column
-    char metatype[256]; // get table loop
+    int row, col; // get table row,column
+    //int i, j; // get table loop
+    //char metatype[256]; // get table loop
 
     char date[DATElen] = { 0, };
     struct tm *t;
@@ -566,6 +720,9 @@ int upINFO() { // case 28
     now = time(NULL);
     t = localtime(&now);
     char *str_now = dateNow(t);
+
+    char pwd[PWDlen] = { 0, }; // 수정을 위한 PWD 확인
+    char sql_ui[SQLlen] = { 0, }; // 업데이트 실행 sql
 
     // CPS.db OPEN
     rc = sqlite3_open("CPS.db", &db);
@@ -578,16 +735,59 @@ int upINFO() { // case 28
     }
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
-    res = "Callback Function Called";
+    NotUsed = "Callback Function Called";
 
-    printf("INFO TABLE's Update\n");
-    puts("수정할 데이터의 id(기본키) 입력:");
-    fgets(id, IDlen, stdin);
+    printf("INFO TABLE's Update\n\n");
+
+    while(1) { // 수정하려는 데이터의 id
+        puts("수정할 데이터의 id(기본키) 입력:");
+        gets(str);
+
+        if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
+            continue;
+        strsize = strlen(str)+1;
+        if(strsize <= IDlen)
+            break;
+
+        printBOF_gets(str, strsize, IDlen);
+    }
+    strncpy(id, str, IDlen-1);
+
+    while(1) { // 수정하려는 데이터 id의 pwd
+        puts("수정할 데이터 id의 PWD 입력(PWD 틀리면 종료):");
+        gets(str);
+
+        if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
+            continue;
+        strsize = strlen(str)+1;
+        if(strsize <= PWDlen)
+            break;
+
+        printBOF_gets(str, strsize, PWDlen);
+    }
+    strncpy(pwd, str, PWDlen-1);
 
     __fpurge(stdin);
-    strncpy(input_sql, "SELECT * FROM INFO WHERE id = '", SQLlen-1);
-    strncat(input_sql, id, SQLlen-1);
-    strcat(input_sql, "';");
+    strncpy(input_sql, "SELECT id, access FROM ADMIN WHERE pwd = '", 42);
+    strncat(input_sql, pwd, PWDlen-1);
+    strncat(input_sql, "' AND id = '", 12);
+    strncat(input_sql, id, IDlen-1);
+    strncat(input_sql, "';", 2);
+    //printf("%s\n", input_sql);
+    rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't search id&pwd : %s!!!\n", sqlite3_errmsg(db));
+        return 1;
+    }
+    else {
+        fprintf(stderr, "Can search id&pwd.\n");
+    }
+
+
+    __fpurge(stdin);
+    strncpy(input_sql, "SELECT * FROM INFO WHERE id = '", 31);
+    strncat(input_sql, id, IDlen-1);
+    strncat(input_sql, "';", 2);
     printf("%s\n", input_sql);
     printf("\nID's data :\n");
     rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
@@ -641,7 +841,7 @@ int upINFO() { // case 28
                 strcat(input_sql, "';");
                 //printf("%s\n", input_sql);
 
-                rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
+                rc = sqlite3_exec(db, input_sql, callback, NotUsed, &errmsg);
                 if(rc != SQLITE_OK) {
                     fprintf(stderr, "Can't Name Update : %s\n", sqlite3_errmsg(db));
                     return 1;
@@ -667,7 +867,7 @@ int upINFO() { // case 28
                 strcat(input_sql, "';");
                 printf("%s\n", input_sql);
 
-                rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
+                rc = sqlite3_exec(db, input_sql, callback, NotUsed, &errmsg);
                 if(rc != SQLITE_OK) {
                     fprintf(stderr, "Can't Birth Update : %s\n", sqlite3_errmsg(db));
                     return 1;
@@ -693,7 +893,7 @@ int upINFO() { // case 28
                 strcat(input_sql, "';");
                 printf("%s\n", input_sql);
 
-                rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
+                rc = sqlite3_exec(db, input_sql, callback, NotUsed, &errmsg);
                 if(rc != SQLITE_OK) {
                     fprintf(stderr, "Can't Email Update : %s\n", sqlite3_errmsg(db));
                     return 1;
@@ -719,7 +919,7 @@ int upINFO() { // case 28
                 strcat(input_sql, "';");
                 printf("%s\n", input_sql);
 
-                rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
+                rc = sqlite3_exec(db, input_sql, callback, NotUsed, &errmsg);
                 if(rc != SQLITE_OK) {
                     fprintf(stderr, "Can't Phone Update : %s\n", sqlite3_errmsg(db));
                     return 1;
@@ -734,7 +934,6 @@ int upINFO() { // case 28
         }
     }
     sqlite3_free_table(result);
-
     sqlite3_close(db);
 
     return 0;
@@ -743,7 +942,7 @@ int upINFO() { // case 28
 int upWL() { // case 29
     sqlite3 *db;
    	char *errmsg;
-    sqlite3_stmt *res;
+    const char *NotUsed;
     int rc;
     char *sql;
     char input_sql[SQLlen] = { 0, };
@@ -772,7 +971,7 @@ int upWL() { // case 29
     }
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
-    res = "Callback Function Called";
+    NotUsed = "Callback Function Called";
 
     puts("WHITELIST TABLE's Update\n");
     puts("update source whitelist:");
@@ -795,7 +994,7 @@ int upWL() { // case 29
     strcat(input_sql, "';");
     printf("%s\n", input_sql);
 
-    rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
+    rc = sqlite3_exec(db, input_sql, callback, NotUsed, &errmsg);
     if(rc != SQLITE_OK) {
         fprintf(stderr, "Can't whitelist Update : %s\n", sqlite3_errmsg(db));
         return 1;
@@ -812,7 +1011,7 @@ int upWL() { // case 29
 int delADMIN() { // case 36
     sqlite3 *db;
     char *errmsg;
-    sqlite3_stmt *res;
+    const char *NotUsed;
     int rc;
     char input_sql[SQLlen-1] = { 0, };
     char id[IDlen] = { 0, };
@@ -838,7 +1037,7 @@ int delADMIN() { // case 36
     }
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
-    res = "Callback Function Called";
+    NotUsed = "Callback Function Called";
 
     printf("ADMIN TABLE's Update\n");
 
@@ -873,7 +1072,7 @@ int delADMIN() { // case 36
         strcat(input_sql, "';");
         //printf("%s\n", input_sql);
 
-        rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
+        rc = sqlite3_exec(db, input_sql, callback, NotUsed, &errmsg);
         if(rc != SQLITE_OK) {
                 fprintf(stderr, "Can't delete : %s\n", sqlite3_errmsg(db));
             return 1;
@@ -883,7 +1082,6 @@ int delADMIN() { // case 36
         }
     }
     sqlite3_free_table(result);
-
     sqlite3_close(db);
 
     return 0;
@@ -897,7 +1095,7 @@ int delINFO() { // case 38
     sqlite3 *db;
     char *errmsg;
     int rc;
-    sqlite3_stmt *res;
+    const char *NotUsed;
     char input_sql[SQLlen] = { 0, };
     char id[IDlen] = { 0, };
     char name[NAMElen] = { 0, };
@@ -918,6 +1116,8 @@ int delINFO() { // case 38
         fprintf(stderr, "Opened CPS database successfully\n");
     }
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+
+    NotUsed = "Callback Function Called";
 
     puts("삭제하는 데이터의 id(기본키) 입력:");
     fgets(id, IDlen, stdin);
@@ -941,7 +1141,7 @@ int delINFO() { // case 38
     strncat(input_sql, id, SQLlen-1);
     strcat(input_sql, "';");
     printf("%s\n", input_sql);
-    rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
+    rc = sqlite3_exec(db, input_sql, callback, NotUsed, &errmsg);
     if(rc != SQLITE_OK) {
             fprintf(stderr, "Can't delete : %s\n", sqlite3_errmsg(db));
             return 1;
@@ -957,7 +1157,7 @@ int delINFO() { // case 38
 int delWL() { // case 39
     sqlite3 *db;
    	char *errmsg;
-    sqlite3_stmt *res;
+    const char *NotUsed;
     int rc;
     char input_sql[SQLlen] = { 0, };
     char whitelist[WLlen] = { 0, };
@@ -976,7 +1176,7 @@ int delWL() { // case 39
     }
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
-    res = "Callback Function Called";
+    NotUsed = "Callback Function Called";
 
     puts("WHITELIST TABLE's records delete.\n");
     puts("input whitelist:");
@@ -989,7 +1189,7 @@ int delWL() { // case 39
     strncat(input_sql, whitelist, SQLlen-1);
     strcat(input_sql, "';");
     printf("%s\n", input_sql);
-    rc = sqlite3_exec(db, input_sql, callback, res, &errmsg);
+    rc = sqlite3_exec(db, input_sql, callback, NotUsed, &errmsg);
     if(rc != SQLITE_OK) {
         fprintf(stderr, "Can't delete : %s\n", sqlite3_errmsg(db));
         return 1;
