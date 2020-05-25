@@ -5,11 +5,12 @@
 #include "DBManagement.h"
 #include "DBManage.h"
 
+#pragma foreign_keys = 1 // 참조키 활성화
+
 void printMenu() {
     int tb = 0;
     int func = 0;
     int menu = 0;
-
     /*
     const char sel_wl[WLlen]; //OUT struct WhiteListTable sel_wt; // case 46
     const char sel_id[IDlen]; //OUT struct InfoTable sel_it; // case 48 & 49 참고
@@ -34,17 +35,17 @@ void printMenu() {
     struct InfoTable del_it; // case 39
     struct InfoTable sel_it; // case 49
     */
-
     printf("Select Number\n");
-    printf("1 : 등록 (insert)\n");
-    printf("2 : 수정 (update)\n");
-    printf("3 : 삭제 (delete)\n");
-    printf("4 : 검색 (search)\n");
-    printf("0 : EXIT\n");
+    printf("1 : 등록 insert\n");
+    printf("2 : 수정 update\n");
+    printf("3 : 삭제 delete\n");
+    printf("4 : 검색 search\n");
+    printf("5 : id, pwd (분실)찾기\n");
+    printf("0 : 종료 EXIT\n");
     printf("input :");
     scanf("%d", &func);
 
-    switch(func) { // 1, 2, 3, 4를 제외한 수를 선택하면 종료
+    switch(func) { // 1, 2, 3, 4, 5를 제외한 수를 선택하면 종료
         case 1:
             break;
         case 2:
@@ -53,17 +54,19 @@ void printMenu() {
             break;
         case 4:
             break;
+        case 5:
+            search_ip();
+            break;
         default:
             exit(0);
             break;
     }
 
     printf("\nSelect Number\n");
-    printf("6 : id(사원번호), 접근권한, 비밀번호 (=>Admin tbl)\n");
-    printf("7 : 공개키, MAC (=>MAC tbl)\n");
-    printf("8 : 사원 정보 - 이름, 생년월일, 이메일, 전화번호 (=>Info tbl)\n");
-    printf("9 : 허용 명령어 목록 (=>Whitelist tbl)\n");
-    printf("0 : EXIT\n");
+    printf("6 : id, 접근권한, pwd, 이름, 생년월일, 이메일, 전화번호 (=>관리자 정보)\n");
+    printf("7 : 공개키, MAC (=>통신 정보)\n");
+    printf("8 : 허용 명령어 목록 (=>Whitelist tbl)\n");
+    printf("0 : 종료 EXIT\n");
     printf("input : ");
     scanf("%d", &tb);
     menu =  func*10 + tb;
@@ -71,7 +74,7 @@ void printMenu() {
 
     switch(menu) {
         case 16:
-            inADMIN();
+            inAD_INFO();
             break;
 
         case 17:
@@ -79,15 +82,11 @@ void printMenu() {
             break;
 
         case 18:
-            inINFO();
-            break;
-
-        case 19:
             inWL();
             break;
 
         case 26:
-            upADMIN();
+            upAD_INFO();
             break;
 
         case 27:
@@ -95,15 +94,11 @@ void printMenu() {
             break;
 
         case 28:
-            upINFO();
-            break;
-
-        case 29:
             upWL();
             break;
 
-        case 36:
-            delADMIN();
+/*        case 36:
+            delAD_INFO();
             break;
 
         case 37:
@@ -111,15 +106,11 @@ void printMenu() {
             break;
 
         case 38:
-            delINFO();
-            break;
-
-        case 39:
             delWL();
             break;
 
         case 46:
-            selADMIN();
+            selAD_INFO();
             break;
 
         case 47:
@@ -127,17 +118,16 @@ void printMenu() {
             break;
 
         case 48:
-            selINFO();
-            break;
-
-        case 49:
             selWL();
+            break;
+*/
+        case 50:
+            search_ip();
             break;
 
        default :
            break;
     }
-
 /*
     printf("\nSelect Number\n");
     printf("6 : 허용 명령어 목록 (Whitelist tbl)\n");
