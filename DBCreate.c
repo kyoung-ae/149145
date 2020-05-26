@@ -4,12 +4,13 @@
 #include "DB.h"
 #include "BaseDefine.h"
 
+#pragma foreign_keys = 1 // 참조키 활성화
+
 int createDB() {
     sqlite3 *db;
    	char *errmsg;
     int rc;
     char *sql;
-    //char *sql_fk; // Foreign Key 활성화 변수
 
     rc = sqlite3_open("CPS.db", &db);
     if(rc != SQLITE_OK) {
@@ -19,25 +20,13 @@ int createDB() {
     else {
         fprintf(stderr, "=CPS.db open=\n");
     }
-
-    sqlite3_busy_timeout(db, 1000); //db open시 timeout 500ms로 설정
-
-/*
-    sql_fk = "PRAGMA foreign_keys = 1"; // Foreign Key 활성화(1) 시킴
-    rc = sqlite3_exec(db, sql_fk, 0, 0, &errmsg);
-    if(rc != SQLITE_OK) {
-       	fprintf(stderr, "참조키 활성화 에러 : %s\n", sqlite3_errmsg(db));
-       	return 1;
-    }
-    else
-        return 0;
-*/
+    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
     //admin table create
    	sql = "CREATE TABLE ADMIN ("\
-        "id TEXT(10) PRIMARY KEY NOT NULL,"\
-        "access INT(1),"\
-        "pwd TEXT(514));";
+        "id TEXT(9) PRIMARY KEY NOT NULL,"\
+        "access TEXT(1),"\
+        "pwd TEXT(513) NOT NULL);";
     rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
     if(rc != SQLITE_OK) {
        	fprintf(stderr, "Can't create ADMIN table : %s\n", sqlite3_errmsg(db));
@@ -49,15 +38,14 @@ int createDB() {
 
     //mac table create
     sql = "CREATE TABLE MAC ("\
-        "id TEXT(10) PRIMARY KEY NOT NULL,"\
-        "public_key TEXT(271),"\
-        "mac0 TEXT(18) NOT NULL,"\
-        "mac1 TEXT(18),"\
-        "mac2 TEXT(18));";
-        /*
-        "mac2 TEXT(18),"\
+        "id TEXT(9) PRIMARY KEY NOT NULL,"\
+        "public_key TEXT(270),"\
+        "mac0 TEXT(17) NOT NULL,"\
+        "mac1 TEXT(17),"\
+        //"mac2 TEXT(17));";
+        "mac2 TEXT(17),"\
         "CONSTRAINT id FOREIGN KEY(id) REFERENCES ADMIN(id));";
-        */
+
     rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
     if(rc != SQLITE_OK) {
        	fprintf(stderr, "Can't create MAC table : %s\n", sqlite3_errmsg(db));
@@ -69,16 +57,16 @@ int createDB() {
 
    	//info table create
    	sql = "CREATE TABLE INFO ("\
-        "id TEXT(10) PRIMARY KEY NOT NULL,"\
-        "name TEXT(31),"\
-        "birth TEXT(7),"\
-        "email TEXT(51),"\
-        "phone TEXT(21),"\
-        "date TEXT(21));";
-        /*
-        "date TEXT(21),"\
+        "id TEXT(9) PRIMARY KEY NOT NULL,"\
+        "name TEXT(30),"\
+        "birth TEXT(6),"\
+        "email TEXT(50) NOT NULL,"\
+        "phone TEXT(20),"\
+        //"date TEXT(20));";
+        "date TEXT(20),"\
+        "UNIQUE(email)," // email은 유일한 값이어야 함.
         "CONSTRAINT id FOREIGN KEY(id) REFERENCES ADMIN(id));";
-        */
+
     rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
     if(rc != SQLITE_OK) {
        	fprintf(stderr, "Can't create INFO table : %s\n", sqlite3_errmsg(db));
@@ -90,13 +78,12 @@ int createDB() {
 
     //whitelist table create
     sql = "CREATE TABLE WHITELIST ("\
-        "whitelist TEXT(31) PRIMARY KEY NOT NULL,"\
-        "id TEXT(10) NOT NULL,"\
-        "date TEXT(21));";
-        /*
+        "whitelist TEXT(30) PRIMARY KEY NOT NULL,"\
+        "id TEXT(9) NOT NULL,"\
+        //"date TEXT(20));";
         "date TEXT(20),"\
         "CONSTRAINT id FOREIGN KEY(id) REFERENCES ADMIN(id));";
-        */
+
    	rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
     if(rc != SQLITE_OK) {
        	fprintf(stderr, "Can't create WHITELIST table : %s\n", sqlite3_errmsg(db));
