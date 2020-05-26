@@ -59,7 +59,6 @@ void printMenu() {
             break;
         default:
             exit(0);
-            break;
     }
 
     printf("\nSelect Number\n");
