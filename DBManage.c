@@ -90,6 +90,7 @@ int search_ip() { // case 5: id, pwd 분실시 지원 기능을 위한 관리자
 
 int checkIDPWD(char id[]) { // 호출 직전에 입력한 id를 매개변수로 받아서 수정이나 삭제 시 id&pwd로 확인 (성공하면 1을 반환)
     sqlite3 *db;
+    sqlite3_stmt *res;
     char *errmsg;
     int rc;
     char input_sql[SQLlen] = { 0, };
@@ -130,37 +131,39 @@ int checkIDPWD(char id[]) { // 호출 직전에 입력한 id를 매개변수로 
     strncpy(pwd, str, PWDlen-1);
 
     __fpurge(stdin);
-    strncpy(input_sql, "SELECT id, access FROM ADMIN WHERE pwd = '", 42);
-    strncat(input_sql, pwd, PWDlen-1);
-    strncat(input_sql, "' AND id = '", 12);
+    strncpy(input_sql, "SELECT CASE WHEN id=='", 22);
     strncat(input_sql, id, IDlen-1);
-    strncat(input_sql, "';", 2);
-    //printf("%s\n", input_sql);
+    strncat(input_sql, "' AND pwd=='", 12);
+    strncat(input_sql, pwd, PWDlen-1);
+    strncat(input_sql, "' THEN 'Success' ELSE 'Failure' END FROM ADMIN;", 47);
+    /*
     rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
     if(rc != SQLITE_OK) {
         fprintf(stderr, "Can't print Admin Table : %s\n", sqlite3_errmsg(db));
         return 1;
     }
-    else {
-        //fprintf(stderr, "Print Admin Table successfully\n");
-    }
+    */
 
-    rc = sqlite3_get_table(db, input_sql, &result, &row, &col, &errmsg);
-        /*for(i = 0; i <= row; i++) {
-            for(j = 0; j <= col; j++) {
-                printf("%s", result[i * col +j]);
-                printf("\t");
-            }
-            printf("\n");
-        } */
-    //printf("%s\n", result[0]);  // id 와 pwd 를 원래 정보와 동일하게 입력하면 id 라고 화면에 출력됨.
-    if(!strcmp(result[0], "id")) { // 사용자가 입력한 id&pwd 동일한 경우에 실행되는 수정 기능
-        sqlite3_free_table(result);
+    rc = sqlite3_prepare_v2(db, input_sql, -1, &res, 0);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
         return 1;
     }
-    else {
-        sqlite3_free_table(result);
+
+    rc = sqlite3_step(res);
+    if (rc == SQLITE_ROW)
+        printf("%s\n", sqlite3_column_text(res, 0));
+
+    if(strcmp("Failure",sqlite3_column_text(res, 0)) == 0) { // 일치하지 않음
+        sqlite3_finalize(res);
+        sqlite3_close(db);
         return 0;
+    }
+    else { // id와 pwd가 일치함
+        sqlite3_finalize(res);
+        sqlite3_close(db);
+        return 1;
     }
 }
 
