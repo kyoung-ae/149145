@@ -27,9 +27,9 @@ int inAD_INFO() { // case 16 ok
     char *errmsg;
     int rc;
     char input_sql[SQLlen] = { 0, };
-    char id[IDlen] = { 0, };
+    char id[IDlen];// = { 0, };
     char pwd[PWDlen] = { 0, };
-    char Access[ACCESSlen] = { 0, };
+    char access[ACCESSlen] = { 0, 0};
     int strsize = 0; // 실제로 사용자에게 입력 받은 글자수를 확인
     char str[MAX] = { 0, }; // 사용자에게 입력받은 임시 문자열
 
@@ -64,28 +64,32 @@ int inAD_INFO() { // case 16 ok
     }
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
-    puts("\nADMIN INFO insert\n");
+    puts("\nADMIN INFO insert");
 
     while(1) { // id 필수로 입력받음
-        printf("ID는 등록 후에 수정이 불가능합니다!!!\n");
+        printf("\nID는 등록 후에 수정이 불가능합니다!!!\n");
         printf("ID는 필수입력 정보입니다.\n");
-        puts("input id (9bytes 보다 길면 다시 입력함):");
+        puts("input id (5~9bytes 길이로 입력하세요):");
         gets(str);
 
         if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
             continue;
         strsize = strlen(str)+1;
-        if(strsize <= IDlen)
+        if(strsize >= 6 && strsize <= IDlen) // id는 5~9bytes 길이 제한
             break;
-
-        printBOF_gets(str, strsize, IDlen);
+        else if(strsize < 6) {
+            printf("5 btyes 보다 길게 입력하세요!\n");
+            continue;
+        }
+        else
+            printBOF_gets(str, strsize, IDlen);
     }
     strncpy(id, str, IDlen-1);
 
     while(1) { // access 입력받음
         printf("\nACCESS는 수정이 가능합니다.\n");
         puts("권한 취득 전이면 엔터키를 누르세요->기본 값(N)으로 등록됩니다.");
-        puts("input Access (E, C, R):");
+        puts("input access (E, C, R):");
         puts("E : EV3 ROBOT 관리자");
         puts("C : CPS 관리자");
         puts("R : ROOT");
@@ -98,7 +102,7 @@ int inAD_INFO() { // case 16 ok
              continue;
         }
 
-        if(str[0] == 'E' || str[0] == 'C' || str[0] == 'R' || str[0] == 'N');
+        if(str[0] == 'E' || str[0] == 'C' || str[0] == 'R' || str[0] == 'N')
             break;
         if(str[0] == '\0') {
             str[0] = 'N';
@@ -107,10 +111,10 @@ int inAD_INFO() { // case 16 ok
         else
             printf("잘못 입력하셨습니다.\n"); // 엔터키(N), E, C, R 을 제외하고는 무한루프
     }
-    strncpy(Access, str, ACCESSlen-1);
+    strncpy(access, str, ACCESSlen-1);
 
     while(1) { // pwd 필수로 입력받음
-        printf("PWD는 수정이 가능합니다.\n");
+        printf("\nPWD는 수정이 가능합니다.\n");
         printf("PWD는 필수입력 정보입니다.\n");
         puts("input pwd (513bytes 보다 길면 다시 입력함):");
         gets(str);
@@ -129,7 +133,7 @@ int inAD_INFO() { // case 16 ok
     strncpy(input_sql, "insert into ADMIN(id, Access, pwd) values('", 43);
     strncat(input_sql, id, IDlen-1);
     strncat(input_sql, "','", 3);
-    strncat(input_sql, Access, ACCESSlen-1);
+    strncat(input_sql, access, ACCESSlen-1);
     strncat(input_sql, "','", 3);
     strncat(input_sql, pwd, PWDlen-1);
     strncat(input_sql, "');", 3);
@@ -151,17 +155,21 @@ int inAD_INFO() { // case 16 ok
         printf("\n지금 입력하는 정보는 id, pwd 분실 시 확인 정보로 사용됩니다!!!\n");
         printf("NAME은 수정이 가능합니다.\n");
         printf("등록을 건너띄려면 바로 EnterKey를 누르세요.\n");
-        puts("input name (30bytes 보다 길면 다시 입력함):");
+        puts("input name (2~30bytes 길이로 입력하세요):");
         gets(str);
 
         str[0] == '\n'; // EnterKey를 누르면 무한푸프 탈출
             break;
         strsize = strlen(str)+1;
 
-        if(strsize <= NAMElen)
+        if(strsize >= 3 && strsize <= NAMElen)
             break;
-
-        printBOF_gets(str, strsize, NAMElen);
+        else if(strsize < 3) {
+            printf("2bytes 보다 길게 입력하세요!\n");
+            continue;
+        }
+        else
+            printBOF_gets(str, strsize, NAMElen);
     }
     strncpy(name, str, NAMElen-1);
 
@@ -225,9 +233,9 @@ int inAD_INFO() { // case 16 ok
     while(1) { // 전화번호는 자연수만 입력 가능
         printf("\n지금 입력하는 정보는 id, pwd 분실 시 확인 정보로 사용됩니다!!!\n");
         printf("PHONE 번호는 수정이 가능합니다.\n");
-        printf("등록을 건너띄려면 바로 Enter를 누르고, 등록을 원하면 2 ~ 20개의 수를 입력하세요.\n");
+        printf("등록을 건너띄려면 바로 EnterKey를 누르세요.\n");
         printf("-표시 없이 숫자만 입력하세요.\n");
-        puts("input phone (20bytes 보다 길면 다시 입력함):");
+        puts("input phone (2~20개의 숫자로만 입력하세요):");
         gets(str);
         if(str[0] == '\0') // EnterKey를 누르면 무한루프 탈출
             break;
@@ -320,34 +328,41 @@ int inWL() { // case 18 ok
     puts("WHITELIST TABLE's insert\n");
 
     while(1) { // whitelist 필수로 입력받음
-        printf("whitelist는 등록 후에 수정이 불가능합니다!!!\n");
+        printf("\nwhitelist는 등록 후에 수정이 불가능합니다!!!\n");
         printf("whitelist는 필수입력 정보입니다.\n");
-        puts("input whitelis (30bytes 보다 길면 다시 입력함):");
+        puts("input whitelist (3~30bytes 길이로 입력하세요.):");
         gets(str);
 
         if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
             continue;
         strsize = strlen(str)+1;
-        if(strsize <= WLlen)
+        if(strsize >=4 && strsize <= WLlen)
             break;
-
-        printBOF_gets(str, strsize, WLlen);
+        else if(strsize < 4) {
+            printf("3 btyes 보다 길게 입력하세요!\n");
+            continue;
+        }
+        else
+            printBOF_gets(str, strsize, WLlen);
     }
     strncpy(whitelist, str, WLlen-1);
 
     while(1) { // id 필수로 입력받음
-        printf("ID는 등록 후에 수정이 불가능합니다!!!\n");
+        printf("\nID는 등록 후에 수정이 불가능합니다!!!\n");
         printf("ID는 필수입력 정보입니다.\n");
-        puts("input id (9bytes 보다 길면 다시 입력함):");
+        puts("input id (5~9bytes 길이로 입력하세요):");
         gets(str);
 
         if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
             continue;
-        strsize = strlen(str)+1;
-        if(strsize <= IDlen)
+        if(strsize >= 6 && strsize <= IDlen) // id는 5~9bytes 길이 제한
             break;
-
-        printBOF_gets(str, strsize, IDlen);
+        else if(strsize < 6) {
+            printf("5 btyes 보다 길게 입력하세요!\n");
+            continue;
+        }
+        else
+            printBOF_gets(str, strsize, IDlen);
     }
     strncpy(id, str, IDlen-1);
 
