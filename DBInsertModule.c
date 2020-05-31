@@ -26,7 +26,8 @@ int inAD_INFO() { // case 16 ok
     sqlite3 *db;
     char *errmsg;
     int rc;
-    char input_sql[SQLlen] = { 0, };
+    char input_sql_ia[SQLlen] = { 0, }; // admin 테이블
+    char input_sql_ii[SQLlen] = { 0, }; // info 테이블
     char id[IDlen];// = { 0, };
     char pwd[PWDlen] = { 0, };
     char access[ACCESSlen] = { 0, 0};
@@ -130,15 +131,15 @@ int inAD_INFO() { // case 16 ok
     strncpy(pwd, str, PWDlen-1);
 
     __fpurge(stdin);
-    strncpy(input_sql, "insert into ADMIN(id, Access, pwd) values('", 43);
-    strncat(input_sql, id, IDlen-1);
-    strncat(input_sql, "','", 3);
-    strncat(input_sql, access, ACCESSlen-1);
-    strncat(input_sql, "','", 3);
-    strncat(input_sql, pwd, PWDlen-1);
-    strncat(input_sql, "');", 3);
+    strncpy(input_sql_ia, "insert into ADMIN(id, Access, pwd) values('", 43);
+    strncat(input_sql_ia, id, IDlen-1);
+    strncat(input_sql_ia, "','", 3);
+    strncat(input_sql_ia, access, ACCESSlen-1);
+    strncat(input_sql_ia, "','", 3);
+    strncat(input_sql_ia, pwd, PWDlen-1);
+    strncat(input_sql_ia, "');", 3);
     //printf("%s\n", input_sql);
-    rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
+    rc = sqlite3_exec(db, input_sql_ia, callback, 0, &errmsg);
     if(rc != SQLITE_OK) {
         fprintf(stderr, "Can't input id, Access, pwd : %s\n", sqlite3_errmsg(db));
         return 1;
@@ -147,7 +148,7 @@ int inAD_INFO() { // case 16 ok
         fprintf(stderr, "Insert success (id, Access, pwd)\n");
     }
 
-    printf("\n지금부터 입력하는 id가 %s인 정보는 id, pwd 분실 시 확인 정보로 사용됩니다!!!\n", id);
+    printf("\n지금 입력하는 id가 %s인 정보는 id, pwd 분실 시 확인 정보로 사용됩니다!!!\n", id);
     printf("등록하려면 입력 후 EnterKey,\n");
     printf("등록을 건너띄려면 바로 EnterKey를 누르세요.\n");
 
@@ -250,11 +251,9 @@ int inAD_INFO() { // case 16 ok
             continue;
         }
 
-        for(p_number = 0, i = 0; i < strsize; i++) { // 입력받은 이메일의 한 글자씩 확인하는 루프
+        for(p_number = 0, i = 0; i < strsize; i++) { // 입력받은 숫자를 하나씩 확인하는 루프
             if((str[i] < '0') || (str[i] > '9')) // 숫자가 아닌 문자가 입력된 경우 반복
                 p_number++; // 숫자가 아니면 p_number 변수 값에 1을 더함
-            else
-                p_number = 0;
         }
         if(p_number == 1) // 전화번호가 길이제한을 넘기지 않고, 모두 숫자로만 입력된 경우는 무한루프 탈출
             break;
@@ -266,21 +265,21 @@ int inAD_INFO() { // case 16 ok
     strncpy(date, str_now, DATElen);
 
     __fpurge(stdin);
-    strncpy(input_sql, "insert into INFO(id, name, birth, email, phone, date) values('", 62);
-    strncat(input_sql, id, IDlen-1);
-    strncat(input_sql, "','", 3);
-    strncat(input_sql, name, NAMElen-1);
-    strncat(input_sql, "','", 3);
-    strncat(input_sql, birth, BIRTHlen-1);
-    strncat(input_sql, "','", 3);
-    strncat(input_sql, email, EMAILlen-1);
-    strncat(input_sql, "','", 3);
-    strncat(input_sql, phone, PHONElen-1);
-    strncat(input_sql, "','", 3);
-    strncat(input_sql, date, DATElen-1);
-    strncat(input_sql, "');", 3);
-    //printf("%s\n", input_sql);
-    rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
+    strncpy(input_sql_ii, "insert into INFO(id, name, birth, email, phone, date) values('", 62);
+    strncat(input_sql_ii, id, IDlen-1);
+    strncat(input_sql_ii, "','", 3);
+    strncat(input_sql_ii, name, NAMElen-1);
+    strncat(input_sql_ii, "','", 3);
+    strncat(input_sql_ii, birth, BIRTHlen-1);
+    strncat(input_sql_ii, "','", 3);
+    strncat(input_sql_ii, email, EMAILlen-1);
+    strncat(input_sql_ii, "','", 3);
+    strncat(input_sql_ii, phone, PHONElen-1);
+    strncat(input_sql_ii, "','", 3);
+    strncat(input_sql_ii, date, DATElen-1);
+    strncat(input_sql_ii, "');", 3);
+    //printf("%s\n", input_sql_ii);
+    rc = sqlite3_exec(db, input_sql_ii, callback, 0, &errmsg);
     if(rc != SQLITE_OK) {
         fprintf(stderr, "Can't input id, name, birth, email, phone, date: %s\n", sqlite3_errmsg(db));
         return 1;
@@ -301,7 +300,7 @@ int inWL() { // case 18 ok
     sqlite3 *db;
    	char *errmsg;
     int rc;
-    char input_sql[SQLlen] = { 0, };
+    char input_sql_iw[SQLlen] = { 0, };
     char whitelist[WLlen] = { 0, };
     char id[IDlen] = { 0, };
     int strsize = 0; // 실제로 사용자에게 입력 받은 글자수를 확인
@@ -321,7 +320,7 @@ int inWL() { // case 18 ok
        	return 1;
     }
    	else {
-        //fprintf(stderr, "Opened CPS.db\n");
+        fprintf(stderr, "Opened CPS.db\n");
     }
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
@@ -371,15 +370,15 @@ int inWL() { // case 18 ok
     strncpy(date, str_now, DATElen);
 
     __fpurge(stdin);
-    strncpy(input_sql, "insert into WHITELIST(whitelist, id, date) values('", 51);
-    strncat(input_sql, whitelist, WLlen-1);
-    strncat(input_sql, "','", 3);
-    strncat(input_sql, id, IDlen-1);
-    strncat(input_sql, "','", 3);
-    strncat(input_sql, date, DATElen-1);
-    strncat(input_sql, "');", 3);
-    //printf("%s\n", input_sql);
-    rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
+    strncpy(input_sql_iw, "insert into WHITELIST(whitelist, id, date) values('", 51);
+    strncat(input_sql_iw, whitelist, WLlen-1);
+    strncat(input_sql_iw, "','", 3);
+    strncat(input_sql_iw, id, IDlen-1);
+    strncat(input_sql_iw, "','", 3);
+    strncat(input_sql_iw, date, DATElen-1);
+    strncat(input_sql_iw, "');", 3);
+    //printf("%s\n", input_sql_iw);
+    rc = sqlite3_exec(db, input_sql_iw, callback, 0, &errmsg);
     if(rc != SQLITE_OK) {
         fprintf(stderr, "Can't input : %s\n", sqlite3_errmsg(db));
         return 1;
