@@ -57,7 +57,9 @@ int upAD_INFO() { // case 26 ok
 
     const char *NotUsed = "Callback Function Called";
 
-    char sql_ua[SQLlen] = { 0, }; // ADMIN table 업데이트 sql
+    char sql_ua[SQLlen] = { 0, }; // ADMIN access 업데이트 sql
+    char sql_up[SQLlen] = { 0, }; // ADMIN pwd 업데이트 sql
+    char sql_uap[SQLlen] = { 0, }; // ADMIN access, pwd 업데이트 sql
     char sql_uin[SQLlen] = { 0, }; // INFO name 업데이트 sql
     char sql_uib[SQLlen] = { 0, }; // INFO birth 업데이트 sql
     char sql_uie[SQLlen] = { 0, }; // INFO email 업데이트 sql
@@ -70,7 +72,7 @@ int upAD_INFO() { // case 26 ok
        	return 1;
     }
    	else {
-        //fprintf(stderr, "Opened CPS.db\n");
+        fprintf(stderr, "Opened CPS.db\n");
     }
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
@@ -165,14 +167,14 @@ int upAD_INFO() { // case 26 ok
 
     if((strlen(Access) == 0) && (strlen(pwd) != 0)) { // pwd만 수정
         __fpurge(stdin);
-        strncpy(sql_ua, "UPDATE ADMIN SET pwd = '", 24);
-        strncat(sql_ua, pwd, PWDlen-1);
-        strncat(sql_ua, "' WHERE id = '", 14);
-        strncat(sql_ua, id, IDlen-1);
-        strncat(sql_ua, "';", 2);
-        //printf("%s\n", sql_ua);
+        strncpy(sql_up, "UPDATE ADMIN SET pwd = '", 24);
+        strncat(sql_up, pwd, PWDlen-1);
+        strncat(sql_up, "' WHERE id = '", 14);
+        strncat(sql_up, id, IDlen-1);
+        strncat(sql_up, "';", 2);
+        //printf("%s\n", sql_up);
 
-        rc = sqlite3_exec(db, sql_ua, callback, NotUsed, &errmsg);
+        rc = sqlite3_exec(db, sql_up, callback, NotUsed, &errmsg);
         if(rc != SQLITE_OK) {
             fprintf(stderr, "Update ERROR (pwd) : %s\n", sqlite3_errmsg(db));
             return 1;
@@ -184,16 +186,16 @@ int upAD_INFO() { // case 26 ok
 
     if((strlen(Access) != 0) && (strlen(pwd) != 0)) { // access & pwd 함께 수정
         __fpurge(stdin);
-        strncpy(sql_ua, "UPDATE ADMIN SET (Access, pwd) = ('", 35);
-        strncat(sql_ua, Access, ACCESSlen-1);
-        strncat(sql_ua, "', '", 4);
-        strncat(sql_ua, pwd, PWDlen-1);
-        strncat(sql_ua, "') WHERE id = '", 15);
-        strncat(sql_ua, id, IDlen-1);
-        strncat(sql_ua, "';", 2);
-        //printf("%s\n", sql_ua);
+        strncpy(sql_uap, "UPDATE ADMIN SET (Access, pwd) = ('", 35);
+        strncat(sql_uap, Access, ACCESSlen-1);
+        strncat(sql_uap, "', '", 4);
+        strncat(sql_uap, pwd, PWDlen-1);
+        strncat(sql_uap, "') WHERE id = '", 15);
+        strncat(sql_uap, id, IDlen-1);
+        strncat(sql_uap, "';", 2);
+        //printf("%s\n", sql_uap);
 
-        rc = sqlite3_exec(db, sql_ua, callback, NotUsed, &errmsg);
+        rc = sqlite3_exec(db, sql_uap, callback, NotUsed, &errmsg);
         if(rc != SQLITE_OK) {
             fprintf(stderr, "Update ERROR (Access&pwd) : %s\n", sqlite3_errmsg(db));
             return 1;
