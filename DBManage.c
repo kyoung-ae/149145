@@ -43,6 +43,19 @@ void removeEnter() { // scanf()의 Enter key 제거
     }
 }
 
+void removeSpace(char str_col[]) { // str_col 문자열의 공백 제거
+    int i = 0;
+    int j = 0;
+
+    while(str_col[i] != '\0') {
+        if(str_col[i] != ' ') {
+            str_col[j++] = str_col[i];
+        }
+        i++;
+    }
+    str_col[j] = '\0'; // 맨 끝에 null 붙이기
+}
+
 char *dateNow(struct tm *t) { // date 가져오는 함수
     static char now[DATElen] = { 0, };
 
@@ -54,7 +67,7 @@ char *dateNow(struct tm *t) { // date 가져오는 함수
 
 void printBOF_gets(char str[], int strsize, int define_size) { // gets() 버퍼오버플로우 방지 : 재입력 요구 메시지 출력
     printf("입력한 byte(s)는 %dbyte(s)입니다.\n", strsize-1);
-    printf("입력 가능한 최대 길이 %dbyte(s)보다 %dbyes(s)가 초과됐습니다.\n", define_size-1, strsize-define_size);
+    printf("입력 최대 길이 %dbyte(s)보다 %dbyes(s)가 초과됐습니다.\n", define_size-1, strsize-define_size);
     printf("입력할 데이터를 다시 확인해보세요.\n");
 }
 
@@ -107,7 +120,6 @@ int checkIDPWD(char id[]) { // 입력한 id를 매개변수로 받아서 수정�
     const char *NotUsed = "Callback Function Called";
 
     char pwd[PWDlen] = { 0, };
-    char access[ACCESSlen] = { 0, };
 
     int strsize = 0; // 실제로 사용자에게 입력 받은 글자수를 확인
     char str[MAX] = { 0, }; // 사용자에게 입력받은 임시 문자열
@@ -115,11 +127,11 @@ int checkIDPWD(char id[]) { // 입력한 id를 매개변수로 받아서 수정�
     // CPS.db OPEN
     rc = sqlite3_open("CPS.db", &db);
     if(rc != SQLITE_OK) {
-        fprintf(stderr, "Can't open CPS DB : %s\n", sqlite3_errmsg(db));
+        fprintf(stderr, "Can't open CPS.db : %s\n", sqlite3_errmsg(db));
        	return 0;
     }
    	else {
-        //fprintf(stderr, "Opened CPS database successfully\n");
+        fprintf(stderr, "Opened CPS.db\n");
     }
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
@@ -127,17 +139,13 @@ int checkIDPWD(char id[]) { // 입력한 id를 매개변수로 받아서 수정�
         puts("수정, 삭제하려는 id의 원래 PWD 입력(PWD 틀리면 종료):");
         gets(str);
 
-        if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
+        if(str[0] == '\n' || str[0] == '\0') // 필수 확인 정보는 null 불가
             continue;
         strsize = strlen(str)+1;
-        if(strsize >= 6 && strsize <= IDlen) // id는 5~9bytes 길이 제한
+        if(strsize <= PWDlen)
             break;
-        else if(strsize < 6) {
-            printf("5 btyes 보다 길게 입력하세요!\n");
-            continue;
-        }
-        else
-            printBOF_gets(str, strsize, IDlen);
+
+        printBOF_gets(str, strsize, PWDlen);
     }
     strncpy(pwd, str, PWDlen-1);
 
@@ -151,15 +159,14 @@ int checkIDPWD(char id[]) { // 입력한 id를 매개변수로 받아서 수정�
     rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
     if(rc != SQLITE_OK) {
         fprintf(stderr, "Can't print Admin Table : %s\n", sqlite3_errmsg(db));
-        return 1;
+        return 0;
     }
     */
-
     rc = sqlite3_prepare_v2(db, input_sql, -1, &res, 0);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
         sqlite3_close(db);
-        return 1;
+        return 0;
     }
 
     rc = sqlite3_step(res);
@@ -169,6 +176,7 @@ int checkIDPWD(char id[]) { // 입력한 id를 매개변수로 받아서 수정�
     if(strcmp("Failure",sqlite3_column_text(res, 0)) == 0) { // 일치하지 않음
         sqlite3_finalize(res);
         sqlite3_close(db);
+        printf("id와 pwd가 등록정보와 일치하지 않습니다. 종료됩니다.\n");
         return 0;
     }
     else { // id와 pwd가 일치함
@@ -176,4 +184,106 @@ int checkIDPWD(char id[]) { // 입력한 id를 매개변수로 받아서 수정�
         sqlite3_close(db);
         return 1;
     }
+}
+
+int checkID(char id[]) { // 입력한 id를 매개변수로 받아서 등록된 id인지 확인 (성공하면 1을 반환)
+    sqlite3 *db;
+    sqlite3_stmt *res;
+    char *errmsg;
+    int rc;
+    char input_sql[SQLlen] = { 0, };
+    const char *NotUsed = "Callback Function Called";
+
+    // CPS.db OPEN
+    rc = sqlite3_open("CPS.db", &db);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't open CPS.db : %s\n", sqlite3_errmsg(db));
+       	return 0;
+    }
+   	else {
+        //fprintf(stderr, "Opened CPS.db\n");
+    }
+    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+
+    __fpurge(stdin);
+    strncpy(input_sql, "SELECT CASE WHEN id=='", 22);
+    strncat(input_sql, id, IDlen-1);
+    strncat(input_sql, "' AND id=='", 11);
+    strncat(input_sql, id, IDlen-1);
+    strncat(input_sql, "' THEN 'Success' ELSE 'Failure' END FROM admin;", 47);
+
+    rc = sqlite3_prepare_v2(db, input_sql, -1, &res, 0);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return 0;
+    }
+
+    rc = sqlite3_step(res);
+    if (rc == SQLITE_ROW)
+        printf("%s\n", sqlite3_column_text(res, 0));
+
+    if(strcmp("Failure",sqlite3_column_text(res, 0)) == 0) { // 존재하지 않는 id임
+        sqlite3_finalize(res);
+        sqlite3_close(db);
+        printf("입력한 id는 존재하지 않습니다. 종료됩니다.\n");
+        return 0;
+    }
+    else { // 입력한 id는 등록된 id임
+        sqlite3_finalize(res);
+        sqlite3_close(db);
+        return 1;
+    }
+    return 0;
+}
+
+int checkWL(char whitelist[]) { // 입력한 whitelist를 매개변수로 받아서 등록된 whitelist인지 확인 (성공하면 1을 반환)
+    sqlite3 *db;
+    sqlite3_stmt *res;
+    char *errmsg;
+    int rc;
+    char input_sql[SQLlen] = { 0, };
+    const char *NotUsed = "Callback Function Called";
+
+    // CPS.db OPEN
+    rc = sqlite3_open("CPS.db", &db);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't open CPS.db : %s\n", sqlite3_errmsg(db));
+       	return 0;
+    }
+   	else {
+        //fprintf(stderr, "Opened CPS.db\n");
+    }
+    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+
+    __fpurge(stdin);
+    strncpy(input_sql, "SELECT CASE WHEN whitelist=='", 29);
+    strncat(input_sql, whitelist, WLlen-1);
+    strncat(input_sql, "' AND whitelist=='", 18);
+    strncat(input_sql, whitelist, WLlen-1);
+    strncat(input_sql, "' THEN 'Success' ELSE 'Failure' END FROM admin;", 47);
+
+    rc = sqlite3_prepare_v2(db, input_sql, -1, &res, 0);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return 0;
+    }
+
+    rc = sqlite3_step(res);
+    if (rc == SQLITE_ROW)
+        printf("%s\n", sqlite3_column_text(res, 0));
+
+    if(strcmp("Failure",sqlite3_column_text(res, 0)) == 0) { // 존재하지 않는 whitelist임
+        sqlite3_finalize(res);
+        sqlite3_close(db);
+        printf("입력한 whitelist는 존재하지 않습니다. 종료됩니다.\n");
+        return 0;
+    }
+    else { // 입력한 whitelist는 등록된 whitelist임
+        sqlite3_finalize(res);
+        sqlite3_close(db);
+        return 1;
+    }
+    return 0;
 }
