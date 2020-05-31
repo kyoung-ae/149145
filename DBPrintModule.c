@@ -169,6 +169,50 @@ void printMenu() {
        default :
             printf("입력 값이 잘못되어 종료됩니다.\n");
     }
+}
+
+void print_search_i() {
+    puts("\n모든 항목을 원하면 : EnterKey만 누르세요");
+    puts("단, 모든 항목 출력은 whitelist에도 방금의 id가 있어야 출력됨");
+    puts("1개 항목을 원하면 : 해당 번호만 입력 후, EnterKey");
+    puts("2개 이상의 항목을 원하면 : 출력을 원하는 순서대로");
+    puts("\t원하는 항목 번호만 입력 후 EnterKey\n");
+    puts("1 : whitelist (whitelist에 방금의 id가 있어야 출력)");
+    puts("2 : access");
+    puts("3 : name");
+    puts("4 : birth");
+    puts("5 : email");
+    puts("6 : phone");
+    puts("7 : admin에 id를 등록(수정)한 날짜");
+    puts("8 : whitelist 등록 날짜 (whitelist에 방금 id가 있어야 출력)");
+    puts("0 : DB종료 EXIT");
+}
+
+void print_search_w() {
+    puts("\n모든 항목을 원하면 : EnterKey만 누르세요");
+    puts("단, 모든 항목 출력은 admin에도 등록된 상태에서 출력");
+    puts("1개 항목을 원하면 : 해당 번호만 입력 후, EnterKey");
+    puts("2개 이상의 항목을 원하면 : 출력을 원하는 순서대로");
+    puts("\t원하는 항목 번호만 입력 후 EnterKey\n");
+    puts("1 : id");
+    puts("2 : access (admin에 등록된 상태에서 출력)");
+    puts("3 : name (admin에 등록된 상태에서 출력)");
+    puts("4 : birth (admin에 등록된 상태에서 출력)");
+    puts("5 : email (admin에 등록된 상태에서 출력)");
+    puts("6 : phone (admin에 등록된 상태에서 출력)");
+    puts("7 : admin에 id를 등록(수정)한 날짜");
+    puts("8 : whitelist를 등록한 날짜");
+    puts("0 : DB종료 EXIT");
+}
+
+void printWhiteListResult(struct WhiteListTable pr_wt) {
+    struct WhiteListTable wt;
+}
+
+void printAdminResult(struct InsInfo pr_i) {
+    struct InsInfo i;
+}
+
 /*
     const char sel_wl[WLlen]; //OUT struct WhiteListTable sel_wt; // case 46
     const char sel_id[IDlen]; //OUT struct InfoTable sel_it; // case 48 & 49 참고
@@ -283,13 +327,4 @@ void printMenu() {
        default :
            break;
     }
-    */
-}
-
-void printWhiteListResult(struct WhiteListTable pr_wt) {
-    struct WhiteListTable wt;
-}
-
-void printAdminResult(struct InsInfo pr_i) {
-    struct InsInfo i;
-}
+*/
