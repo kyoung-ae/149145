@@ -1,10 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "sqlite3.h"
 #include "DB.h"
-#include "BaseDefine.h"
-
-#pragma foreign_keys = 1 // 참조키 활성화
 
 int createDB() {
     sqlite3 *db;
@@ -12,13 +6,14 @@ int createDB() {
     int rc;
     char *sql;
 
+    // CPS.db OPEN
     rc = sqlite3_open("CPS.db", &db);
     if(rc != SQLITE_OK) {
-    	fprintf(stderr, "Can't open CPS DB : %s\n", sqlite3_errmsg(db));
-        return 1;
+        fprintf(stderr, "Can't open CPS.db : %s\n", sqlite3_errmsg(db));
+       	return 1;
     }
-    else {
-        fprintf(stderr, "=CPS.db open=\n");
+   	else {
+        fprintf(stderr, "Opened CPS.db\n");
     }
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
