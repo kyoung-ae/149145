@@ -1,5 +1,5 @@
 #ifndef DBCreate_H
-#define DBCreat_H
+#define DBCreate_H
 
 int createDB();
 
