@@ -1,18 +1,9 @@
-#include <stdio.h>
-#include "BaseDefine.h"
 #include "DB.h"
-#include <stdlib.h>
-#include <string.h>
-#include "DBManagement.h"
-#include "DBManage.h"
-
-#pragma foreign_keys = 1 // 참조키 활성화
 
 void printMenu() {
     int tb = 0;
     int func = 0;
     int menu = 0;
-    int col;
 
     printf("Select Number\n");
     printf("1 : 등록 insert\n");
@@ -23,7 +14,7 @@ void printMenu() {
     printf("0 : 종료 EXIT\n");
     printf("input :");
     scanf("%d", &func);
-    removeEnter();
+    removeEnter(); // DBManage.c
 
     switch(func) { // 1, 2, 3, 4, 5를 제외한 수를 선택하면 종료
         case 0:
@@ -39,7 +30,7 @@ void printMenu() {
             printf("input : ");
             scanf("%d", &tb);
             menu =  func*10 + tb;
-            removeEnter();
+            removeEnter(); // DBManage.c
             break;
 
         case 2: // update 기능
@@ -50,7 +41,7 @@ void printMenu() {
             printf("input : ");
             scanf("%d", &tb);
             menu =  func*10 + tb;
-            removeEnter();
+            removeEnter(); // DBManage.c
             break;
 
         case 3: // search 기능
@@ -61,7 +52,7 @@ void printMenu() {
             printf("input : ");
             scanf("%d", &tb);
             menu =  func*10 + tb;
-            removeEnter();
+            removeEnter(); // DBManage.c
             break;
 
         case 4: // delete 기능
@@ -73,7 +64,7 @@ void printMenu() {
             printf("input : ");
             scanf("%d", &tb);
             menu =  func*10 + tb;
-            removeEnter();
+            removeEnter(); // DBManage.c
             break;
 
         case 5: // id, pwd 분실지원 찾기 기능
@@ -85,7 +76,7 @@ void printMenu() {
             printf("input : ");
             scanf("%d", &tb);
             menu =  func*10 + tb;
-            removeEnter();
+            removeEnter(); // DBManage.c
             break;
 
         default:
@@ -99,15 +90,15 @@ void printMenu() {
             break;
 
         case 16:
-            inAD_INFO();
+            inAD_INFO(); // DBInsertModule.c
             break;
 
         case 17:
-            inMAC();
+            inMAC(); // DBInsertModule.c
             break;
 
         case 18:
-            inWL();
+            inWL(); // DBInsertModule.c
             break;
 
         case 20:
@@ -115,11 +106,11 @@ void printMenu() {
             break;
 
         case 26:
-            upAD_INFO();
+            upAD_INFO(); // DBUpdateModule.c
             break;
 
         case 27:
-            upMAC();
+            upMAC(); // DBUpdateModule.c
             break;
 
         case 30:
@@ -127,11 +118,11 @@ void printMenu() {
             break;
 
         case 36:
-            search_id();
+            search_id(); // DBSearchModule.c
             break;
 
         case 37:
-            search_wl();
+            search_wl(); // DBSearchModule.c
             break;
 
         case 40:
@@ -139,15 +130,15 @@ void printMenu() {
             break;
 
         case 46:
-            delAD_INFO();
+            delAD_INFO(); // DBDeleteModule.c
             break;
 
         case 47:
-            delMAC();
+            delMAC(); // DBDeleteModule.c
             break;
 
         case 48:
-            delWL();
+            delWL(); // DBDeleteModule.c
             break;
 
         case 50:
@@ -155,15 +146,15 @@ void printMenu() {
             break;
 
         case 56:
-            searchId(); // case 56 : id 분실 시 지원 기능을 위한 관리자 정보를 호출하는 함수
+            searchId(); // DBHintIdPwd.c
             break;
 
         case 57:
-            searchPwd();
+            searchPwd(); // DBHintIdPwd.c
             break;
 
         case 58:
-            search_ip();
+            search_ip(); // DBHintIdPwd.c
             break;
 
        default :
@@ -204,13 +195,13 @@ void print_search_w() {
     puts("8 : whitelist를 등록한 날짜");
     puts("0 : DB종료 EXIT");
 }
-
+/*
 void printWhiteListResult(struct WhiteListTable pr_wt) {
-    struct WhiteListTable wt;
+    struct WhiteListTable pr_wt;
 }
 
 void printAdminResult(struct InsInfo pr_i) {
-    struct InsInfo i;
+    struct InsInfo pr_i;
 }
 
 /*
