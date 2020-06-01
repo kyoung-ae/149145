@@ -1,7 +1,27 @@
 #ifndef DB_H
 #define DB_H
 
+#define _CTR_SECURE_NO_WARNINGS
+
 #pragma foreign_keys = 1 // 참조키 활성화
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#include "BaseDefine.h"
+#include "sqlite3.h"
+#include "DBCreate.h"
+#include "DBPrintModule.h"
+#include "DBSearchModule.h"
+#include "DBManage.h"
+#include "DBManagement.h"
+#include "DBProgram.h"
+#include "DBInsertModule.h"
+#include "DBUpdateModule.h"
+#include "DBDeleteModule.h"
+#include "DBHintIdPwd.h"
 
 // #define len 크기 지정은 실제크기+1 로 지정
 #define SQLlen 800 // 입력 길이 제한이 가장 긴 PWDlen(514) 를 포함하는 admin 테이블을 기준으로 설정함
@@ -17,6 +37,8 @@
 #define PHONElen 21
 #define BIRTHlen 9
 #define MAX 1024 // 입력받는 임시 문자열
+#define COLlen 9 // 검색 항목 선택 문자열 길이
+#define COLNAMElen 12
 
 struct WhiteListTable {
     char whitelist[WLlen];
