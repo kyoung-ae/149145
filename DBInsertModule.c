@@ -1,16 +1,4 @@
-#define _CTR_SECURE_NO_WARNINGS
-
-#include <stdio.h>
-#include <stdlib.h>
-#include "sqlite3.h"
-#include <string.h>
-#include "BaseDefine.h"
 #include "DB.h"
-#include "DBPrintModule.h"
-#include "DBManage.h"
-#include <ctype.h>
-
-#pragma foreign_keys = 1 // 참조키 활성화
 
 static int callback(void *NotUsed, int argc, char **argv, char **azColName) { // callback
     int i;
@@ -52,7 +40,7 @@ int inAD_INFO() { // case 16 ok
     time_t now;
     now = time(NULL);
     t = localtime(&now);
-    char *str_now = dateNow(t);
+    char *str_now = dateNow(t); // DBManage.c
 
     // CPS.db OPEN
     rc = sqlite3_open("CPS.db", &db);
@@ -83,7 +71,7 @@ int inAD_INFO() { // case 16 ok
             continue;
         }
         else
-            printBOF_gets(str, strsize, IDlen);
+            printBOF_gets(str, strsize, IDlen); // DBManage.c
     }
     strncpy(id, str, IDlen-1);
 
@@ -99,7 +87,7 @@ int inAD_INFO() { // case 16 ok
 
         strsize = strlen(str)+1;
         if(strsize > ACCESSlen) {
-             printBOF_gets(str, strsize, ACCESSlen);
+             printBOF_gets(str, strsize, ACCESSlen); // DBManage.c
              continue;
         }
 
@@ -126,7 +114,7 @@ int inAD_INFO() { // case 16 ok
         if(strsize <= PWDlen)
             break;
 
-        printBOF_gets(str, strsize, PWDlen);
+        printBOF_gets(str, strsize, PWDlen); // DBManage.c
     }
     strncpy(pwd, str, PWDlen-1);
 
@@ -170,7 +158,7 @@ int inAD_INFO() { // case 16 ok
             continue;
         }
         else
-            printBOF_gets(str, strsize, NAMElen);
+            printBOF_gets(str, strsize, NAMElen); // DBManage.c
     }
     strncpy(name, str, NAMElen-1);
 
@@ -187,7 +175,7 @@ int inAD_INFO() { // case 16 ok
 
         if(strsize == BIRTHlen) {
             b_date = atoi(str);
-            if(checkDate(b_date) == 1) // 1이면 참(유효날짜)
+            if(checkDate(b_date) == 1) // DBManage.c : 1이면 참(유효날짜)
                  break;
             else {
                 printf("유효 날짜가 아닙니다!!!\n");
@@ -211,7 +199,7 @@ int inAD_INFO() { // case 16 ok
             continue;
         strsize = strlen(str)+1;
         if(strsize > EMAILlen) {
-            printBOF_gets(str, strsize, EMAILlen);
+            printBOF_gets(str, strsize, EMAILlen); // DBManage.c
             continue;
         }
 
@@ -242,7 +230,7 @@ int inAD_INFO() { // case 16 ok
             break;
         strsize = strlen(str)+1;
         if(strsize > PHONElen) {
-            printBOF_gets(str, strsize, PHONElen);
+            printBOF_gets(str, strsize, PHONElen); // DBManage.c
             continue;
         }
 
@@ -311,7 +299,7 @@ int inWL() { // case 18 ok
     time_t now;
     now = time(NULL);
     t = localtime(&now);
-    char *str_now = dateNow(t);
+    char *str_now = dateNow(t); // DBManage.c
 
     // CPS.db OPEN
     rc = sqlite3_open("CPS.db", &db);
@@ -342,7 +330,7 @@ int inWL() { // case 18 ok
             continue;
         }
         else
-            printBOF_gets(str, strsize, WLlen);
+            printBOF_gets(str, strsize, WLlen); // DBManage.c
     }
     strncpy(whitelist, str, WLlen-1);
 
@@ -361,7 +349,7 @@ int inWL() { // case 18 ok
             continue;
         }
         else
-            printBOF_gets(str, strsize, IDlen);
+            printBOF_gets(str, strsize, IDlen); // DBManage.c
     }
     strncpy(id, str, IDlen-1);
 
