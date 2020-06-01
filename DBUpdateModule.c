@@ -1,16 +1,4 @@
-#define _CTR_SECURE_NO_WARNINGS
-
-#include <stdio.h>
-#include <stdlib.h>
-#include "sqlite3.h"
-#include <string.h>
-#include "BaseDefine.h"
 #include "DB.h"
-#include "DBPrintModule.h"
-#include "DBManage.h"
-#include <ctype.h>
-
-#pragma foreign_keys = 1 // 참조키 활성화
 
 static int callback(void *NotUsed, int argc, char **argv, char **azColName) { // callback
     int i;
@@ -53,7 +41,7 @@ int upAD_INFO() { // case 26 ok
     time_t now;
     now = time(NULL);
     t = localtime(&now);
-    char *str_now = dateNow(t);
+    char *str_now = dateNow(t); // DBManage.c
 
     const char *NotUsed = "Callback Function Called";
 
@@ -92,11 +80,11 @@ int upAD_INFO() { // case 26 ok
             continue;
         }
         else
-            printBOF_gets(str, strsize, IDlen);
+            printBOF_gets(str, strsize, IDlen); // DBManage.c
     }
     strncpy(id, str, IDlen-1);
 
-    if(checkIDPWD(id) == 0) { // 사용자가 입력한 id&pwd 일치하지 않으면 종료
+    if(checkIDPWD(id) == 0) { // DBManage.c : 사용자가 입력한 id&pwd 일치하지 않으면 종료
         sqlite3_close(db);
         return 0;
     }
@@ -126,7 +114,7 @@ int upAD_INFO() { // case 26 ok
         if(strsize <= ACCESSlen)
             break;
 
-        printBOF_gets(str, strsize, ACCESSlen);
+        printBOF_gets(str, strsize, ACCESSlen); // DBManage.c
     }
     strncpy(Access, str, ACCESSlen-1);
     //update admin set access = 'access' where access is not null and id = 'id'; // null이 아닌 access 값 수정
@@ -142,7 +130,7 @@ int upAD_INFO() { // case 26 ok
         if(strsize <= PWDlen)
             break;
 
-        printBOF_gets(str, strsize, PWDlen);
+        printBOF_gets(str, strsize, PWDlen); // DBManage.c
     }
     strncpy(pwd, str, PWDlen-1);
 
@@ -223,7 +211,7 @@ int upAD_INFO() { // case 26 ok
             continue;
         }
         else
-            printBOF_gets(str, strsize, NAMElen);
+            printBOF_gets(str, strsize, NAMElen); // DBManage.c
     }
     strncpy(name, str, NAMElen-1);
 
@@ -262,7 +250,7 @@ int upAD_INFO() { // case 26 ok
         strsize = strlen(str)+1;
         if(strsize == BIRTHlen) {
             b_date = atoi(str);
-            if(checkDate(b_date) == 1) // 1이면 참(유효날짜)
+            if(checkDate(b_date) == 1) // DBManage.c : 1이면 참(유효날짜)
                  break;
             else {
                 printf("유효 날짜가 아닙니다!!!\n");
@@ -308,7 +296,7 @@ int upAD_INFO() { // case 26 ok
             break;
         strsize = strlen(str)+1;
         if(strsize > EMAILlen) {
-            printBOF_gets(str, strsize, EMAILlen);
+            printBOF_gets(str, strsize, EMAILlen); // DBManage.c
             continue;
         }
         for(i = 0; i < strsize; i++) { // 입력받은 이메일의 한 글자씩 확인하는 루프
@@ -362,7 +350,7 @@ int upAD_INFO() { // case 26 ok
             break;
         strsize = strlen(str)+1;
         if(strsize > PHONElen) {
-            printBOF_gets(str, strsize, PHONElen);
+            printBOF_gets(str, strsize, PHONElen); // DBManage.c
             continue;
         }
         if(strsize < 3) { // 숫자 1개만 입력하면 반복
