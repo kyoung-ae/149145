@@ -1,16 +1,4 @@
-#define _CTR_SECURE_NO_WARNINGS
-
-#include <stdio.h>
-#include <stdlib.h>
-#include "sqlite3.h"
-#include <string.h>
-#include "BaseDefine.h"
 #include "DB.h"
-#include "DBPrintModule.h"
-#include "DBManage.h"
-#include <ctype.h>
-
-#pragma foreign_keys = 1 // 참조키 활성화
 
 static int callback(void *NotUsed, int argc, char **argv, char **azColName) { // callback
     int i;
@@ -74,11 +62,11 @@ int search_id() { // case 36 : id를 기준으로 검색
             continue;
         }
         else
-            printBOF_gets(str, strsize, IDlen);
+            printBOF_gets(str, strsize, IDlen); // DBManage.c
     }
     strncpy(id, str, IDlen-1);
 
-    if(checkID(id) == 0) { // 사용자가 입력한 id가 존재하지 않으면 종료
+    if(checkID(id) == 0) { // DBManage.c : 사용자가 입력한 id가 존재하지 않으면 종료
         sqlite3_close(db);
         return 0;
     }
@@ -99,7 +87,7 @@ int search_id() { // case 36 : id를 기준으로 검색
     printf("모든 항목 출력이 아닌, 원하는 항목을 지정하려면 해당 번호를 누르세요.\n");
 
     while(1) { // 검색 결과 항목 선택
-        print_search_i();
+        print_search_i(); // DBPrintModule.c
         gets(str_col);
 
         if(str_col[0] == '\n' || str_col[0] == '\0') // null 이면 모든 항목을 출력함
@@ -107,11 +95,11 @@ int search_id() { // case 36 : id를 기준으로 검색
         if(str_col[0] == '0')  // 0을 선택하면 종료됨
             exit(0);
 
-        removeSpace(str_col); // 공백이 입력된 경우는 제거
+        removeSpace(str_col); // DBManage.c : 공백이 입력된 경우는 제거
         strsize = strlen(str_col)+1;
 
         if(strsize > COLlen) { // 길이 제한을 초과한 경우는 반복
-            printBOF_gets(str, strsize, COLlen);
+            printBOF_gets(str, strsize, COLlen); // DBManage.c
             continue;
         }
 
@@ -362,11 +350,11 @@ int search_wl() { // case 37 : whitelist를 기준으로 검색
             continue;
         }
         else
-            printBOF_gets(str, strsize, WLlen);
+            printBOF_gets(str, strsize, WLlen); // DBManage.c
     }
     strncpy(whitelist, str, WLlen-1);
 
-    if(checkWL(whitelist) == 0) { // 사용자가 입력한 whitelist가 존재하지 않으면 종료
+    if(checkWL(whitelist) == 0) { // DBManage.c : 사용자가 입력한 whitelist가 존재하지 않으면 종료
         sqlite3_close(db);
         return 0;
     }
@@ -376,7 +364,7 @@ int search_wl() { // case 37 : whitelist를 기준으로 검색
     printf("모든 항목 출력이 아닌, 원하는 항목을 지정하려면 해당 번호를 누르세요.\n\n");
 
     while(1) { // 검색 결과 항목 선택
-        print_search_w();
+        print_search_w(); // DBPrintModule.c
         gets(str_col);
 
         if(str_col[0] == '\n' || str_col[0] == '\0') // null 이면 모든 항목을 출력함
@@ -384,11 +372,11 @@ int search_wl() { // case 37 : whitelist를 기준으로 검색
         if(str_col[0] == '0')  // 0을 선택하면 종료됨
             exit(0);
 
-        removeSpace(str_col); // 공백이 입력된 경우는 제거
+        removeSpace(str_col); // DBManage.c : 공백이 입력된 경우는 제거
         strsize = strlen(str_col)+1;
 
         if(strsize > COLlen) { // 길이 제한을 초과한 경우는 반복
-            printBOF_gets(str, strsize, COLlen);
+            printBOF_gets(str, strsize, COLlen); // DBManage.c
             continue;
         }
 
