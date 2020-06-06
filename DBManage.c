@@ -1,19 +1,33 @@
-#include "DB.h"
+#define _CTR_SECURE_NO_WARNINGS
 
-int inAD_INFO(); // DBInsertModule.c : case 16 ok
-int inMAC(); // DBInsertModule.c : case 17 // 통신과 연결해야해서 작성 못함
-int inWL(); // DBInsertModule.c : case 18 ok
-int upAD_INFO(); // DBUpdateModule.c : case 26 ok
-int upMAC(); // DBUpdateModule.c : case 27 // 통신과 연결해야해서 작성 못함
-int search_INFO(); // DBSearchModule.c : case 36 // 관리자 정보를 기준으로 검색
-int searchMAC(); // DBSearchModule.c : case 37 // 공개키와 맥을 기준으로 검색
-int searchWL(); // DBSearchModule.c : case 38 // 화이트리스트를 기준으로 검색
-int delAD_INFO(); // DBDeleteModule.c : case 46 // 아직 작성 못함
-int delMAC(); //  DBDeleteModule.c : case 47 // 통신과 연결해야해서 작성 못함
-int delWL(); //  DBDeleteModule.c : case 48  // 아직 작성 못함
-int searchId(); // DBHintIdPwd.c : case 56 : id 분실 시 지원 기능을 위한 관리자 정보를 호출하는 함수 // 아직 작성 못함
-int searchPwd(); // DBHintIdPwd.c : case 57 : pwd 분실 시 지원 기능을 위한 관리자 정보를 호출하는 함수 // 아직 작성 못함
-int search_ip(); // DBHintIdPwd.c : case 58 : id와 pwd 분실 시 지원 기능을 위한 관리자 정보를 호출하는 함수 // 작성 못함
+#pragma foreign_keys = 1 // 참조키 활성화
+
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdio_ext.h>
+
+#include "sqlite3.h"
+#include "DBCreate.h"
+#include "DBPrintModule.h"
+#include "DBSearchModule.h"
+#include "DBManage.h"
+#include "DBManagement.h"
+#include "DBInsertModule.h"
+#include "DBUpdateModule.h"
+#include "DBDeleteModule.h"
+#include "DBlen.h"
+#include "DB.h"
+#include "DBLogin.h"
+#include "DBBackupR.h"
+#include "BaseDefine.h"
+#include "DBProgram.h"
+#include "DBd.h"
+#include "DBins.h"
+#include "DBs.h"
+#include "DBup.h"
 
 static int callback(void *NotUsed, int argc, char **argv, char **azColName) { // callback
     int i;
@@ -53,12 +67,6 @@ char *dateNow(struct tm *t) { // date 가져오는 함수
                 t->tm_mon + 1, t->tm_mday, t->tm_hour, t->tm_min, t->tm_sec);
 
     return now;
-}
-
-void printBOF_gets(char str[], int strsize, int define_size) { // gets() 버퍼오버플로우 방지 : 재입력 요구 메시지 출력
-    printf("입력한 byte(s)는 %dbyte(s)입니다.\n", strsize-1);
-    printf("입력 최대 길이 %dbyte(s)보다 %dbyes(s)가 초과됐습니다.\n", define_size-1, strsize-define_size);
-    printf("입력할 데이터를 다시 확인해보세요.\n");
 }
 
 int checkDate(int date) { // 입력받은 날짜의 유효성 검사-> 1이면 유효한 날짜 (0이면 없는 날짜임)
@@ -104,10 +112,9 @@ int checkDate(int date) { // 입력받은 날짜의 유효성 검사-> 1이면 �
 int checkIDPWD(char id[]) { // 입력한 id를 매개변수로 받아서 수정이나 삭제 시 id&pwd로 확인 (성공하면 1을 반환)
     sqlite3 *db;
     sqlite3_stmt *res;
-    char *errmsg;
+    //char *errmsg;
     int rc;
     char input_sql[SQLlen] = { 0, };
-    const char *NotUsed = "Callback Function Called";
 
     char pwd[PWDlen] = { 0, };
 
@@ -125,8 +132,10 @@ int checkIDPWD(char id[]) { // 입력한 id를 매개변수로 받아서 수정�
     }
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
-    while(1) { // 수정, 삭제하려는 데이터 id의 pwd
-        puts("수정, 삭제하려는 id의 원래 PWD 입력(PWD 틀리면 종료):");
+    checkID(id);
+
+    while(1) { // 확인하려는 데이터 id의 pwd
+        puts("\n확인하려는 id의 원래 PWD 입력(PWD 틀리면 종료):");
         gets(str);
 
         if(str[0] == '\n' || str[0] == '\0') // 필수 확인 정보는 null 불가
@@ -135,11 +144,17 @@ int checkIDPWD(char id[]) { // 입력한 id를 매개변수로 받아서 수정�
         if(strsize <= PWDlen)
             break;
 
-        printBOF_gets(str, strsize, PWDlen);
+        printBOF_gets(str, strsize, PWDlen); // DBPrintModule.c
     }
     strncpy(pwd, str, PWDlen-1);
 
     __fpurge(stdin);
+    strncpy(input_sql, "SELECT id, pwd FROM ADMIN WHERE id = '", 38);
+    strncat(input_sql, id, IDlen-1);
+    strncat(input_sql, "' AND pwd = '", 13);
+    strncat(input_sql, pwd, PWDlen-1);
+    strncat(input_sql, "';", 2);
+    /*
     strncpy(input_sql, "SELECT CASE WHEN id=='", 22);
     strncat(input_sql, id, IDlen-1);
     strncat(input_sql, "' AND pwd=='", 12);
@@ -160,19 +175,18 @@ int checkIDPWD(char id[]) { // 입력한 id를 매개변수로 받아서 수정�
     }
 
     rc = sqlite3_step(res);
-    if (rc == SQLITE_ROW)
-        printf("%s\n", sqlite3_column_text(res, 0));
-
-    if(strcmp("Failure",sqlite3_column_text(res, 0)) == 0) { // 일치하지 않음
+    if (rc == SQLITE_ROW) { // 등록된 id와 pwd가 일치함
         sqlite3_finalize(res);
         sqlite3_close(db);
-        printf("id와 pwd가 등록정보와 일치하지 않습니다. 종료됩니다.\n");
-        return 0;
-    }
-    else { // id와 pwd가 일치함
-        sqlite3_finalize(res);
-        sqlite3_close(db);
+        input_sql[0] = '\0';
         return 1;
+    }
+    else { // 등록된 id와 pwd가 일치하지 않음
+        printf("등록된 id의 pwd가 아닙니다.종료됩니다.\n");
+        sqlite3_finalize(res);
+        sqlite3_close(db);
+        input_sql[0] = '\0';
+        return 0;
     }
 }
 
@@ -196,12 +210,17 @@ int checkID(char id[]) { // 입력한 id를 매개변수로 받아서 등록된 
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
     __fpurge(stdin);
+    strncpy(input_sql, "SELECT id From Admin where id='", 31);
+    strncat(input_sql, id, IDlen-1);
+    strncat(input_sql, "';", 2);
+    //printf("%s\n", input_sql);
+    /*
     strncpy(input_sql, "SELECT CASE WHEN id=='", 22);
     strncat(input_sql, id, IDlen-1);
     strncat(input_sql, "' AND id=='", 11);
     strncat(input_sql, id, IDlen-1);
     strncat(input_sql, "' THEN 'Success' ELSE 'Failure' END FROM admin;", 47);
-
+    */
     rc = sqlite3_prepare_v2(db, input_sql, -1, &res, 0);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
@@ -210,29 +229,27 @@ int checkID(char id[]) { // 입력한 id를 매개변수로 받아서 등록된 
     }
 
     rc = sqlite3_step(res);
-    if (rc == SQLITE_ROW)
-        printf("%s\n", sqlite3_column_text(res, 0));
-
-    if(strcmp("Failure",sqlite3_column_text(res, 0)) == 0) { // 존재하지 않는 id임
+    if (rc == SQLITE_ROW) { // 등록된 id임이 확인됨.
         sqlite3_finalize(res);
         sqlite3_close(db);
-        printf("입력한 id는 존재하지 않습니다. 종료됩니다.\n");
-        return 0;
-    }
-    else { // 입력한 id는 등록된 id임
-        sqlite3_finalize(res);
-        sqlite3_close(db);
+        input_sql[0] = '\0';
         return 1;
     }
-    return 0;
+    else { // 등록되지 않은 id임
+        printf("존재하지 않는 id입니다. 종료됩니다.\n");
+        sqlite3_finalize(res);
+        sqlite3_close(db);
+        input_sql[0] = '\0';
+        return 0;
+    }
 }
 
-int checkWL(char whitelist[]) { // 입력한 whitelist를 매개변수로 받아서 등록된 whitelist인지 확인 (성공하면 1을 반환)
+int checkWL(char whitelist[]) { // 입력한 whitelist를 매개변수로 받아 등록된 whitelist인지 확인 (성공하면 1 반환)
     sqlite3 *db;
     sqlite3_stmt *res;
     char *errmsg;
     int rc;
-    char input_sql[SQLlen] = { 0, };
+    char input_sql_wc[SQLlen] = { 0, };
     const char *NotUsed = "Callback Function Called";
 
     // CPS.db OPEN
@@ -247,13 +264,18 @@ int checkWL(char whitelist[]) { // 입력한 whitelist를 매개변수로 받아
     sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
     __fpurge(stdin);
-    strncpy(input_sql, "SELECT CASE WHEN whitelist=='", 29);
-    strncat(input_sql, whitelist, WLlen-1);
-    strncat(input_sql, "' AND whitelist=='", 18);
-    strncat(input_sql, whitelist, WLlen-1);
-    strncat(input_sql, "' THEN 'Success' ELSE 'Failure' END FROM admin;", 47);
-
-    rc = sqlite3_prepare_v2(db, input_sql, -1, &res, 0);
+    strncpy(input_sql_wc, "SELECT whitelist FROM WHITELIST WHERE whitelist = '", 51);
+    strncat(input_sql_wc, whitelist, WLlen-1);
+    strncat(input_sql_wc, "';", 2);
+    /*
+    strncpy(input_sql_wc, "SELECT CASE WHEN whitelist=='", 29);
+    strncat(input_sql_wc, whitelist, WLlen-1);
+    strncat(input_sql_wc, "' AND whitelist=='", 18);
+    strncat(input_sql_wc, whitelist, WLlen-1);
+    strncat(input_sql_wc, "' THEN 'Success' ELSE 'Failure' END FROM WHITELIST;", 51);
+    */
+    //printf("%s\n", input_sql_wc);
+    rc = sqlite3_prepare_v2(db, input_sql_wc, -1, &res, 0);
     if (rc != SQLITE_OK) {
         fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
         sqlite3_close(db);
@@ -261,19 +283,65 @@ int checkWL(char whitelist[]) { // 입력한 whitelist를 매개변수로 받아
     }
 
     rc = sqlite3_step(res);
-    if (rc == SQLITE_ROW)
-        printf("%s\n", sqlite3_column_text(res, 0));
-
-    if(strcmp("Failure",sqlite3_column_text(res, 0)) == 0) { // 존재하지 않는 whitelist임
+    if (rc == SQLITE_ROW) { // 등록된 whitelist 임이 확인됨.
         sqlite3_finalize(res);
         sqlite3_close(db);
-        printf("입력한 whitelist는 존재하지 않습니다. 종료됩니다.\n");
-        return 0;
-    }
-    else { // 입력한 whitelist는 등록된 whitelist임
-        sqlite3_finalize(res);
-        sqlite3_close(db);
+        input_sql_wc[0] = '\0';
         return 1;
     }
-    return 0;
+    else { // 등록되지 않은 whitelist 임
+        printf("존재하지 않는 whitelist입니다. 종료됩니다.\n");
+        sqlite3_finalize(res);
+        sqlite3_close(db);
+        input_sql_wc[0] = '\0';
+        return 0;
+    }
+}
+
+int checkEmail(char email[]) { // 입력한 email을 매개변수로 받아 등록된 email인지 확인 (성공하면 1반환)
+    sqlite3 *db;
+    sqlite3_stmt *res;
+    char *errmsg;
+    int rc;
+    char input_sql_ec[SQLlen] = { 0, };
+    const char *NotUsed = "Callback Function Called";
+
+    // CPS.db OPEN
+    rc = sqlite3_open("CPS.db", &db);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't open CPS.db : %s\n", sqlite3_errmsg(db));
+       	return 0;
+    }
+   	else {
+        //fprintf(stderr, "Opened CPS.db\n");
+    }
+    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+
+    __fpurge(stdin);
+    strncpy(input_sql_ec, "SELECT email FROM info WHERE email = '", 38);
+    strncat(input_sql_ec, email, EMAILlen-1);
+    strncat(input_sql_ec, "';", 2);
+
+    //printf("%s\n", input_sql_ec);
+    rc = sqlite3_prepare_v2(db, input_sql_ec, -1, &res, 0);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return 0;
+    }
+
+    rc = sqlite3_step(res);
+    if (rc == SQLITE_ROW) { // 등록된 email 임이 확인됨.
+        sqlite3_finalize(res);
+        sqlite3_close(db);
+        input_sql_ec[0] = '\0';
+        return 1;
+    }
+    else { // 등록되지 않은 email 임
+        printf("존재하지 않는 email입니다. 종료됩니다.\n");
+        sqlite3_finalize(res);
+        sqlite3_close(db);
+        input_sql_ec[0] = '\0';
+        return 0;
+    }
 }
