@@ -1,4 +1,33 @@
+#define _CTR_SECURE_NO_WARNINGS
+
+#pragma foreign_keys = 1 // 참조키 활성화
+
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdio_ext.h>
+
+#include "sqlite3.h"
+#include "DBCreate.h"
+#include "DBPrintModule.h"
+#include "DBSearchModule.h"
+#include "DBManage.h"
+#include "DBManagement.h"
+#include "DBInsertModule.h"
+#include "DBUpdateModule.h"
+#include "DBDeleteModule.h"
+#include "DBlen.h"
 #include "DB.h"
+#include "DBLogin.h"
+#include "DBBackupR.h"
+#include "BaseDefine.h"
+#include "DBProgram.h"
+#include "DBd.h"
+#include "DBins.h"
+#include "DBs.h"
+#include "DBup.h"
 
 static int callback(void *NotUsed, int argc, char **argv, char **azColName) { // callback
     int i;
@@ -10,13 +39,13 @@ static int callback(void *NotUsed, int argc, char **argv, char **azColName) { //
     return 0;
 }
 
-int inAD_INFO() { // case 16 ok
+int inAD_INFO() { // case 16
     sqlite3 *db;
     char *errmsg;
     int rc;
     char input_sql_ia[SQLlen] = { 0, }; // admin 테이블
     char input_sql_ii[SQLlen] = { 0, }; // info 테이블
-    char id[IDlen];// = { 0, };
+    char id[IDlen] = { 0, };
     char pwd[PWDlen] = { 0, };
     char access[ACCESSlen] = { 0, 0};
     int strsize = 0; // 실제로 사용자에게 입력 받은 글자수를 확인
@@ -26,7 +55,7 @@ int inAD_INFO() { // case 16 ok
     char birth[BIRTHlen] = { 0, };
     char email[EMAILlen] = { 0, };
     char phone[PHONElen] = { 0, };
-    char date[DATElen] = { 0, };
+    char I_date[DATElen] = { 0, };
 
     int b_date = 0; // birth 문자열을 정수형으로 받을 변수
 
@@ -46,7 +75,7 @@ int inAD_INFO() { // case 16 ok
     rc = sqlite3_open("CPS.db", &db);
     if(rc != SQLITE_OK) {
         fprintf(stderr, "Can't open CPS.db : %s\n", sqlite3_errmsg(db));
-       	return 1;
+       	return 0;
     }
    	else {
         fprintf(stderr, "Opened CPS.db\n");
@@ -56,6 +85,8 @@ int inAD_INFO() { // case 16 ok
     puts("\nADMIN INFO insert");
 
     while(1) { // id 필수로 입력받음
+        id[0] = '\0';
+        str[0] = '\0';
         printf("\nID는 등록 후에 수정이 불가능합니다!!!\n");
         printf("ID는 필수입력 정보입니다.\n");
         puts("input id (5~9bytes 길이로 입력하세요):");
@@ -71,11 +102,13 @@ int inAD_INFO() { // case 16 ok
             continue;
         }
         else
-            printBOF_gets(str, strsize, IDlen); // DBManage.c
+            printBOF_gets(str, strsize, IDlen); // DBPrintModule.c
     }
     strncpy(id, str, IDlen-1);
 
     while(1) { // access 입력받음
+        access[0] = 'N';
+        str[0] = '\0';
         printf("\nACCESS는 수정이 가능합니다.\n");
         puts("권한 취득 전이면 엔터키를 누르세요->기본 값(N)으로 등록됩니다.");
         puts("input access (E, C, R):");
@@ -87,7 +120,7 @@ int inAD_INFO() { // case 16 ok
 
         strsize = strlen(str)+1;
         if(strsize > ACCESSlen) {
-             printBOF_gets(str, strsize, ACCESSlen); // DBManage.c
+             printBOF_gets(str, strsize, ACCESSlen); // DBPrintModule.c
              continue;
         }
 
@@ -103,6 +136,8 @@ int inAD_INFO() { // case 16 ok
     strncpy(access, str, ACCESSlen-1);
 
     while(1) { // pwd 필수로 입력받음
+        pwd[0] = '\0';
+        str[0] = '\0';
         printf("\nPWD는 수정이 가능합니다.\n");
         printf("PWD는 필수입력 정보입니다.\n");
         puts("input pwd (513bytes 보다 길면 다시 입력함):");
@@ -114,12 +149,12 @@ int inAD_INFO() { // case 16 ok
         if(strsize <= PWDlen)
             break;
 
-        printBOF_gets(str, strsize, PWDlen); // DBManage.c
+        printBOF_gets(str, strsize, PWDlen); // DBPrintModule.c
     }
     strncpy(pwd, str, PWDlen-1);
 
     __fpurge(stdin);
-    strncpy(input_sql_ia, "insert into ADMIN(id, Access, pwd) values('", 43);
+    strncpy(input_sql_ia, "insert into ADMIN(id, access, pwd) values('", 43);
     strncat(input_sql_ia, id, IDlen-1);
     strncat(input_sql_ia, "','", 3);
     strncat(input_sql_ia, access, ACCESSlen-1);
@@ -129,18 +164,21 @@ int inAD_INFO() { // case 16 ok
     //printf("%s\n", input_sql);
     rc = sqlite3_exec(db, input_sql_ia, callback, 0, &errmsg);
     if(rc != SQLITE_OK) {
-        fprintf(stderr, "Can't input id, Access, pwd : %s\n", sqlite3_errmsg(db));
-        return 1;
+        fprintf(stderr, "Can't input id, access, pwd : %s\n", sqlite3_errmsg(db));
+        return 0;
     }
     else {
-        fprintf(stderr, "Insert success (id, Access, pwd)\n");
+        fprintf(stderr, "Insert success (id, access, pwd)\n");
     }
+    input_sql_ia[0] = '\0';
 
     printf("\n지금 입력하는 id가 %s인 정보는 id, pwd 분실 시 확인 정보로 사용됩니다!!!\n", id);
     printf("등록하려면 입력 후 EnterKey,\n");
     printf("등록을 건너띄려면 바로 EnterKey를 누르세요.\n");
 
     while(1) { // name 입력받음
+        name[0] = '\0';
+        str[0] = '\0';
         printf("\n지금 입력하는 정보는 id, pwd 분실 시 확인 정보로 사용됩니다!!!\n");
         printf("NAME은 수정이 가능합니다.\n");
         printf("등록을 건너띄려면 바로 EnterKey를 누르세요.\n");
@@ -158,18 +196,20 @@ int inAD_INFO() { // case 16 ok
             continue;
         }
         else
-            printBOF_gets(str, strsize, NAMElen); // DBManage.c
+            printBOF_gets(str, strsize, NAMElen); // DBPrintModule.c
     }
     strncpy(name, str, NAMElen-1);
 
     while(1) { // 생년월일은 yyyymmdd 8개의 유효 날짜로 입력받음
+        birth[0] = '\0';
+        str[0] = '\0';
         printf("\n지금 입력하는 정보는 id, pwd 분실 시 확인 정보로 사용됩니다!!!\n");
         printf("BIRTH는 수정이 가능합니다.\n");
         printf("등록을 건너띄려면 바로 EnterKey를 누르세요.\n");
         puts("input birth (yyyymmdd 8개 유효 날짜(숫자)가 아니면 다시 입력함):");
         gets(str);
 
-        str[0] == '\0'; // EnterKey를 누르면 무한푸프 탈출
+        str[0] == '\n'; // EnterKey를 누르면 무한푸프 탈출
             break;
         strsize = strlen(str)+1;
 
@@ -189,6 +229,8 @@ int inAD_INFO() { // case 16 ok
     strncpy(birth, str, BIRTHlen-1);
 
     while(1) { // 이메일 : @는 [1] ~ [끝-2] && .은 [@위치+2] ~ [끝]
+        email[0] = '\0';
+        str[0] = '\0';
         printf("\n지금 입력하는 정보는 id, pwd 분실 시 확인 정보로 사용됩니다!!!\n");
         printf("EMAIL은 수정이 가능합니다.\n");
         printf("EMAIL은 필수 입력정보입니다..\n");
@@ -199,7 +241,7 @@ int inAD_INFO() { // case 16 ok
             continue;
         strsize = strlen(str)+1;
         if(strsize > EMAILlen) {
-            printBOF_gets(str, strsize, EMAILlen); // DBManage.c
+            printBOF_gets(str, strsize, EMAILlen); // DBPrintModule.c
             continue;
         }
 
@@ -220,6 +262,8 @@ int inAD_INFO() { // case 16 ok
     strncpy(email, str, EMAILlen-1);
 
     while(1) { // 전화번호는 자연수만 입력 가능
+        phone[0] = '\0';
+        str[0] = '\0';
         printf("\n지금 입력하는 정보는 id, pwd 분실 시 확인 정보로 사용됩니다!!!\n");
         printf("PHONE 번호는 수정이 가능합니다.\n");
         printf("등록을 건너띄려면 바로 EnterKey를 누르세요.\n");
@@ -230,7 +274,7 @@ int inAD_INFO() { // case 16 ok
             break;
         strsize = strlen(str)+1;
         if(strsize > PHONElen) {
-            printBOF_gets(str, strsize, PHONElen); // DBManage.c
+            printBOF_gets(str, strsize, PHONElen); // DBPrintModule.c
             continue;
         }
 
@@ -248,12 +292,10 @@ int inAD_INFO() { // case 16 ok
     }
     strncpy(phone, str, PHONElen-1);
 
-    puts("EnterKey를 누르세요.");
-    printf("%s\n", str_now);
-    strncpy(date, str_now, DATElen);
+    strncpy(I_date, str_now, DATElen);
 
     __fpurge(stdin);
-    strncpy(input_sql_ii, "insert into INFO(id, name, birth, email, phone, date) values('", 62);
+    strncpy(input_sql_ii, "insert into INFO(id, name, birth, email, phone, I_date) values('", 64);
     strncat(input_sql_ii, id, IDlen-1);
     strncat(input_sql_ii, "','", 3);
     strncat(input_sql_ii, name, NAMElen-1);
@@ -264,27 +306,24 @@ int inAD_INFO() { // case 16 ok
     strncat(input_sql_ii, "','", 3);
     strncat(input_sql_ii, phone, PHONElen-1);
     strncat(input_sql_ii, "','", 3);
-    strncat(input_sql_ii, date, DATElen-1);
+    strncat(input_sql_ii, I_date, DATElen-1);
     strncat(input_sql_ii, "');", 3);
     //printf("%s\n", input_sql_ii);
     rc = sqlite3_exec(db, input_sql_ii, callback, 0, &errmsg);
     if(rc != SQLITE_OK) {
-        fprintf(stderr, "Can't input id, name, birth, email, phone, date: %s\n", sqlite3_errmsg(db));
-        return 1;
+        fprintf(stderr, "Can't input id, name, birth, email, phone, I_date: %s\n", sqlite3_errmsg(db));
+        return 0;
     }
     else {
-        fprintf(stderr, "Insert success (id, name, birth, email, phone, date)\n");
+        fprintf(stderr, "Insert success (id, name, birth, email, phone, I_date)\n");
     }
+    input_sql_ii[0] = '\0';
     sqlite3_close(db);
 
-    return 0;
+    return 1;
 }
 
-int inMAC() { // case 17 // 통신과 연결해야해서 작성 못함
-
-}
-
-int inWL() { // case 18 ok
+int inWL() { // case 17 ok
     sqlite3 *db;
    	char *errmsg;
     int rc;
@@ -294,7 +333,7 @@ int inWL() { // case 18 ok
     int strsize = 0; // 실제로 사용자에게 입력 받은 글자수를 확인
     char str[MAX] = { 0, }; // 사용자에게 입력받은 임시 문자열
 
-    char date[DATElen] = { 0, };
+    char W_date[DATElen] = { 0, };
     struct tm *t;
     time_t now;
     now = time(NULL);
@@ -315,6 +354,8 @@ int inWL() { // case 18 ok
     puts("WHITELIST TABLE's insert\n");
 
     while(1) { // whitelist 필수로 입력받음
+        whitelist[0] = '\0';
+        str[0] = '\0';
         printf("\nwhitelist는 등록 후에 수정이 불가능합니다!!!\n");
         printf("whitelist는 필수입력 정보입니다.\n");
         puts("input whitelist (3~30bytes 길이로 입력하세요.):");
@@ -330,11 +371,13 @@ int inWL() { // case 18 ok
             continue;
         }
         else
-            printBOF_gets(str, strsize, WLlen); // DBManage.c
+            printBOF_gets(str, strsize, WLlen); // DBPrintModule.c
     }
     strncpy(whitelist, str, WLlen-1);
 
     while(1) { // id 필수로 입력받음
+        id[0] = '\0';
+        str[0] = '\0';
         printf("\nID는 등록 후에 수정이 불가능합니다!!!\n");
         printf("ID는 필수입력 정보입니다.\n");
         puts("input id (5~9bytes 길이로 입력하세요):");
@@ -342,6 +385,7 @@ int inWL() { // case 18 ok
 
         if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
             continue;
+        strsize = strlen(str)+1;
         if(strsize >= 6 && strsize <= IDlen) // id는 5~9bytes 길이 제한
             break;
         else if(strsize < 6) {
@@ -349,32 +393,31 @@ int inWL() { // case 18 ok
             continue;
         }
         else
-            printBOF_gets(str, strsize, IDlen); // DBManage.c
+            printBOF_gets(str, strsize, IDlen); // DBPrintModule.c
     }
     strncpy(id, str, IDlen-1);
 
-    puts("EnterKey를 누르세요.");
-    printf("%s\n", str_now);
-    strncpy(date, str_now, DATElen);
+    strncpy(W_date, str_now, DATElen);
 
     __fpurge(stdin);
-    strncpy(input_sql_iw, "insert into WHITELIST(whitelist, id, date) values('", 51);
+    strncpy(input_sql_iw, "insert into WHITELIST(whitelist, id, W_date) values('", 53);
     strncat(input_sql_iw, whitelist, WLlen-1);
     strncat(input_sql_iw, "','", 3);
     strncat(input_sql_iw, id, IDlen-1);
     strncat(input_sql_iw, "','", 3);
-    strncat(input_sql_iw, date, DATElen-1);
+    strncat(input_sql_iw, W_date, DATElen-1);
     strncat(input_sql_iw, "');", 3);
     //printf("%s\n", input_sql_iw);
     rc = sqlite3_exec(db, input_sql_iw, callback, 0, &errmsg);
     if(rc != SQLITE_OK) {
         fprintf(stderr, "Can't input : %s\n", sqlite3_errmsg(db));
-        return 1;
+        return 0;
     }
     else {
         fprintf(stderr, "Print input successfully\n");
     }
+    input_sql_iw[0] = '\0';
     sqlite3_close(db);
 
-    return 0;
+    return 1;
 }

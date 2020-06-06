@@ -1,4 +1,33 @@
+#define _CTR_SECURE_NO_WARNINGS
+
+#pragma foreign_keys = 1 // 참조키 활성화
+
+#include <time.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <stdio_ext.h>
+
+#include "sqlite3.h"
+#include "DBCreate.h"
+#include "DBPrintModule.h"
+#include "DBSearchModule.h"
+#include "DBManage.h"
+#include "DBManagement.h"
+#include "DBInsertModule.h"
+#include "DBUpdateModule.h"
+#include "DBDeleteModule.h"
+#include "DBlen.h"
 #include "DB.h"
+#include "DBLogin.h"
+#include "DBBackupR.h"
+#include "BaseDefine.h"
+#include "DBProgram.h"
+#include "DBd.h"
+#include "DBins.h"
+#include "DBs.h"
+#include "DBup.h"
 
 int createDB() {
     sqlite3 *db;
@@ -31,6 +60,27 @@ int createDB() {
        	fprintf(stderr, "Created ADMIN table successfully\n");
    	}
 
+   	//info table create
+   	sql = "CREATE TABLE INFO ("\
+        "id TEXT(9) PRIMARY KEY NOT NULL,"\
+        "name TEXT(30),"\
+        "birth TEXT(6),"\
+        "email TEXT(50) NOT NULL,"\
+        "phone TEXT(20),"\
+        //"I_date TEXT(20));";
+        "I_date TEXT(20),"\
+        "UNIQUE(email)," // email은 유일한 값이어야 함.
+        "CONSTRAINT id FOREIGN KEY(id) REFERENCES ADMIN(id));";
+
+    rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
+    if(rc != SQLITE_OK) {
+       	fprintf(stderr, "Can't create INFO table : %s\n", sqlite3_errmsg(db));
+       	return 1;
+    }
+    else {
+       	fprintf(stderr, "Created INFO table successfully\n");
+    }
+
     //mac table create
     sql = "CREATE TABLE MAC ("\
         "id TEXT(9) PRIMARY KEY NOT NULL,"\
@@ -50,33 +100,12 @@ int createDB() {
        	fprintf(stderr, "Created MAC table successfully\n");
     }
 
-   	//info table create
-   	sql = "CREATE TABLE INFO ("\
-        "id TEXT(9) PRIMARY KEY NOT NULL,"\
-        "name TEXT(30),"\
-        "birth TEXT(6),"\
-        "email TEXT(50) NOT NULL,"\
-        "phone TEXT(20),"\
-        //"date TEXT(20));";
-        "date TEXT(20),"\
-        "UNIQUE(email)," // email은 유일한 값이어야 함.
-        "CONSTRAINT id FOREIGN KEY(id) REFERENCES ADMIN(id));";
-
-    rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
-    if(rc != SQLITE_OK) {
-       	fprintf(stderr, "Can't create INFO table : %s\n", sqlite3_errmsg(db));
-       	return 1;
-    }
-    else {
-       	fprintf(stderr, "Created INFO table successfully\n");
-    }
-
     //whitelist table create
     sql = "CREATE TABLE WHITELIST ("\
         "whitelist TEXT(30) PRIMARY KEY NOT NULL,"\
         "id TEXT(9) NOT NULL,"\
-        //"date TEXT(20));";
-        "date TEXT(20),"\
+        //"W_date TEXT(20));";
+        "W_date TEXT(20),"\
         "CONSTRAINT id FOREIGN KEY(id) REFERENCES ADMIN(id));";
 
    	rc = sqlite3_exec(db, sql, 0, 0, &errmsg);
