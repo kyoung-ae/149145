@@ -198,7 +198,71 @@ int sa() { // int selAdminInfo(const char sel_id[IDlen], const char sel_pwd[PWDl
 }
 
 int sp() { // int searchPWD(const char search_id[IDlen], const char seearch_pwd[PWDlen]); // 비번 검색 // case 38
+    sqlite3 *db;
+    sqlite3_stmt *res;
+    char *errmsg;
+    int rc;
+    char input_sql[SQLlen] = { 0, };
+    const char *NotUsed = "Callback Function Called";
+    char id[IDlen] = { 0, };
+    char pwd[PWDlen] = { 0, };
 
+    int strsize = 0; // 실제로 사용자에게 입력 받은 글자수를 확인
+    char str[MAX] = { 0, }; // 사용자에게 입력받은 임시 문자열
+
+    // CPS.db OPEN
+    rc = sqlite3_open("CPS.db", &db);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't open CPS.db : %s\n", sqlite3_errmsg(db));
+       	return 0;
+    }
+   	else {
+        fprintf(stderr, "Opened CPS.db\n");
+    }
+    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+
+    while(1) { // id 검색
+        id[0] = '\0';
+        str[0] = '\0';
+        puts("\nSearch id (9bytes 보다 길면 다시 입력함):");
+        gets(str);
+
+        if(str[0] == '\n' || str[0] == '\0') // 검색 정보는 null 불가
+            continue;
+        strsize = strlen(str)+1;
+        if(strsize >= 6 && strsize <= IDlen) // id는 5~9bytes 길이 제한
+            break;
+        else if(strsize < 6) {
+            printf("5 btyes 보다 길게 입력하세요!\n");
+            continue;
+        }
+        else
+            printBOF_gets(str, strsize, IDlen); // DBPrintModule.c
+    }
+    strncpy(id, str, IDlen-1);
+
+    if(checkID(id) == 0) { // DBManage.c : 사용자가 입력한 id가 존재하지 않으면 종료
+        sqlite3_close(db);
+        return 0;
+    }
+
+    while(1) { // 확인하려는 데이터 id의 pwd
+        puts("\n확인하려는 id의 원래 PWD 입력(PWD 틀리면 종료):");
+        gets(str);
+
+        if(str[0] == '\n' || str[0] == '\0') // 필수 확인 정보는 null 불가
+            continue;
+        strsize = strlen(str)+1;
+        if(strsize <= PWDlen)
+            break;
+
+        printBOF_gets(str, strsize, PWDlen); // DBPrintModule.c
+    }
+    strncpy(pwd, str, PWDlen-1);
+    sqlite3_close(db);
+    searchPWD(id, pwd);
+
+    return 0;
 }
 
 int sk() { // int selPublicKey(const char sel_id[IDlen], const char sel_pwd[PWDlen], OUT char sel_pk[PKlen]); // 공개키 검색 // case 39

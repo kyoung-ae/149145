@@ -774,9 +774,64 @@ int selAdminInfo(const char id[], const char pwd[]/*, OUT struct InfoTable sel_i
     }
 }
 
-int searchPWD(const char search_id[IDlen], const char seearch_pwd[PWDlen]) { // 비번 검색 // case 38
-    char id[IDlen];
-    char pwd[PWDlen];
+int searchPWD(const char id[], const char pwd[]) { // 비번 검색 // case 38
+    sqlite3 *db;
+    sqlite3_stmt *res;
+    //char *errmsg;
+    int rc;
+    char input_sql[SQLlen] = { 0, };
+
+    // CPS.db OPEN
+    rc = sqlite3_open("CPS.db", &db);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't open CPS.db : %s\n", sqlite3_errmsg(db));
+       	return 0;
+    }
+   	else {
+        fprintf(stderr, "Opened CPS.db\n");
+    }
+    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
+    __fpurge(stdin);
+    strncpy(input_sql, "SELECT id, pwd FROM ADMIN WHERE id = '", 38);
+    strncat(input_sql, id, IDlen-1);
+    strncat(input_sql, "' AND pwd = '", 13);
+    strncat(input_sql, pwd, PWDlen-1);
+    strncat(input_sql, "';", 2);
+    /*
+    strncpy(input_sql, "SELECT CASE WHEN id=='", 22);
+    strncat(input_sql, id, IDlen-1);
+    strncat(input_sql, "' AND pwd=='", 12);
+    strncat(input_sql, pwd, PWDlen-1);
+    strncat(input_sql, "' THEN 'Success' ELSE 'Failure' END FROM ADMIN;", 47);
+    /*
+    rc = sqlite3_exec(db, input_sql, callback, 0, &errmsg);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't print Admin Table : %s\n", sqlite3_errmsg(db));
+        return 0;
+    }
+    */
+    rc = sqlite3_prepare_v2(db, input_sql, -1, &res, 0);
+    if (rc != SQLITE_OK) {
+        fprintf(stderr, "Failed to fetch data: %s\n", sqlite3_errmsg(db));
+        sqlite3_close(db);
+        return 0;
+    }
+
+    rc = sqlite3_step(res);
+    if (rc == SQLITE_ROW) { // 등록된 id와 pwd가 일치함
+        sqlite3_finalize(res);
+        sqlite3_close(db);
+        input_sql[0] = '\0';
+        printf("등록된 id와 pwd가 모두 일치합니다.\n");
+        return 1;
+    }
+    else { // 등록된 id와 pwd가 일치하지 않음
+        printf("등록된 id의 pwd가 아닙니다.종료됩니다.\n");
+        sqlite3_finalize(res);
+        sqlite3_close(db);
+        input_sql[0] = '\0';
+        return 0;
+    }
 }
 
 int selPublicKey(const char sel_id[IDlen], const char sel_pwd[PWDlen], OUT char sel_pk[PKlen]) { // 공개키 검색 // case 39
