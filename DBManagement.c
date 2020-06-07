@@ -396,7 +396,16 @@ int selWhitelist(/*const*/ char whitelist[]/*, OUT struct WhiteListTable sel_wt*
 
     char str_col[ACCESSlen] = { 0, }; // 사용자가 입력한 문자열(항목 번호)
 
-    //strncpy(whitelist, sel_wl.whitelist, WLlen-1);
+    // CPS.db OPEN
+    rc = sqlite3_open("CPS.db", &db);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't open CPS.db : %s\n", sqlite3_errmsg(db));
+       	return 1;
+    }
+   	else {
+        fprintf(stderr, "Opened CPS.db\n");
+    }
+    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
     printf("\n입력한 whitelist : %s를 기준으로 검색결과를 출력합니다.\n", whitelist);
     printf("\n검색 결과 항목은 pwd를 제외하고 모든 항목이 출력됩니다.\n");
@@ -517,7 +526,17 @@ int selAdminInfo(const char id[], const char pwd[]/*, OUT struct InfoTable sel_i
     char sql_s_i1[SQLlen] = { 0, }; // whitelist&W_date 검색
     char sql_s_i2[SQLlen] = { 0, }; // admin.access 검색
     char sql_s_i3[SQLlen] = { 0, }; // info.name&birth&email&phone&I_date 검색
-
+    
+    // CPS.db OPEN
+    rc = sqlite3_open("CPS.db", &db);
+    if(rc != SQLITE_OK) {
+        fprintf(stderr, "Can't open CPS.db : %s\n", sqlite3_errmsg(db));
+       	return 1;
+    }
+   	else {
+        fprintf(stderr, "Opened CPS.db\n");
+    }
+    sqlite3_busy_timeout(db, 500); //db open시 timeout 500ms로 설정
 
     printf("\n입력한 id : %s를 기준으로 검색결과를 출력합니다.\n", id);
     printf("\n검색 결과 항목은 pwd를 제외하고 모든 항목이 출력됩니다.\n");
