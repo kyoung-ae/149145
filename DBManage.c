@@ -414,17 +414,17 @@ void checkRep(char id[], char play[]) { // 작업 진행 여부 확인 루프
     if(str[0] == '1') {
         printf("%s 과정을 위해 pwd를 재확인합니다.\n", play);
         for(i = 0; i < 5; i++) { // pwd 확인을 5회로 제한
-            if(checkIDPWD(id) == 0) { // DBManage.c : 입력한 id&pwd 일치하지 않으면 종료
+            if(checkIDPWD(id) == 0) {
                 if(i <= 2)
                     printf("총 5회 시도 중에 %d번 남았습니다.\n", 4-i);
                 if(i == 3)
-                    printf("\n마지막 시도입니다. pwd가 일치하지 않으면 DB메뉴로 돌아갑니다.\n");
+                    printf("\n마지막 시도입니다. pwd가 일치하지 않으면 기능 선택 화면으로 돌아갑니다.\n");
             }
             else
                 break;
         }
         if(i == 5) {
-            printf("\n5번 모두 id와 pwd가 일치하지 않아 DB메뉴로 돌아갑니다.\n\n");
+            printf("\n5번 모두 id와 pwd가 일치하지 않아 기능 선택 화면으로 돌아갑니다.\n\n");
             printMenu();
         }
     }

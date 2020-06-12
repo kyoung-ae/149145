@@ -39,6 +39,8 @@ int search_id() { // case 36 : id를 기준으로 검색
     char *errmsg;
     int rc;
     char sql_searchid[SQLlen] = { 0, }; // 모든 항목이 나오게 검색
+    char sql_checkidpwd[SQLlen] = { 0, };
+    char pwd[PWDlen] = { 0, };
     char play[IDlen] = {"검색\0"};
 
     char id[IDlen] = { 0, };
@@ -100,18 +102,19 @@ int search_id() { // case 36 : id를 기준으로 검색
         printMenu();
     }
 
-    printf("\n입력한 id : %s를 기준으로 검색결과를 출력합니다.\n", id);
-    printf("\n검색 결과 항목은 pwd를 제외하고 모든 항목이 출력됩니다.\n");
-    printf("모든 항목 출력이 아닌, 원하는 항목을 지정하려면 해당 번호를 누르세요.\n");
-
     if(checkFunc(id) == 0) { // DBManage.c
         sqlite3_close(db);
         printf("기능 선택 화면으로 돌아갑니다.\n");
         printMenu();
     }
 
+    printf("\n입력한 id : %s를 기준으로 검색결과를 출력합니다.\n", id);
+    printf("\n검색 결과 항목은 pwd를 제외하고 모든 항목이 출력됩니다.\n");
+    printf("모든 항목 출력이 아닌, 원하는 항목을 지정하려면 해당 번호를 누르세요.\n");
+    //printf("%s 과정을 위해 pwd를 재확인합니다.\n", play);
+
     while(1) { // 검색 결과 항목 선택
-        memset(str[0], '\0', ACCESSlen);
+        memset(str, '\0', ACCESSlen);
         strsize = 0;
         print_search_i(); // DBPrintModule.c
         printf("input : ");
