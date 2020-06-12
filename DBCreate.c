@@ -91,8 +91,8 @@ int createDB() {
     }
     else {
        	fprintf(stderr, "Created WHITELIST table successfully\n");
-        backup();
-        RestoreB();
+        backup(); // DBManage.c
+        RestoreB(); // DBBackupR.c
     }
 
     sqlite3_close(db);
