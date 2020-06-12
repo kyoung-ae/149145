@@ -422,36 +422,48 @@ int upAD_INFO() { // case 26
     }
     memset(sql_upadinfo, '\0', SQLlen);
 
-    while(1) { // 이메일 수정 : @는 [1] ~ [끝-2] && .은 [@위치+2] ~ [끝]
-        memset(email, '\0', EMAILlen);
-        memset(str, '\0', EMAILlen);
-        strsize = 0;
-        printf("수정을 건너띄려면 EnterKey만 누르세요.\n");
-        puts("email 변경 값 입력:");
-        gets(str);
+    while(1) { // 유일한 이메일 값으로 입력받아서 수정함
+        while(1) { // 이메일 수정 : @는 [1] ~ [끝-2] && .은 [@위치+2] ~ [끝]
+            memset(email, '\0', EMAILlen);
+            memset(str, '\0', EMAILlen);
+            strsize = 0;
+            printf("수정을 건너띄려면 EnterKey만 누르세요.\n");
+            puts("email 변경 값 입력:");
+            gets(str);
 
-        if(str[0] == '\0') // EnterKey를 누르면 무한루프 탈출
-            break;
-        strsize = strlen(str)+1;
-        if(strsize > EMAILlen) {
-            printBOF_gets(str, strsize, EMAILlen); // DBPrintModule.c
+            if(str[0] == '\0') // EnterKey를 누르면 무한루프 탈출
+                break;
+            strsize = strlen(str)+1;
+            if(strsize > EMAILlen) {
+                printBOF_gets(str, strsize, EMAILlen); // DBPrintModule.c
+                continue;
+            }
+            for(i = 0; i < strsize; i++) { // 입력받은 이메일의 한 글자씩 확인하는 루프
+                if(i > 0 && str[i] == '@') // @는 맨 앞에 올 수 없음
+                    pos_at = i+1;
+                if(i > pos_at && str[i] =='.') // .은 @+1 보다 뒤에 있음
+                    pos_dot = i+1;
+            }
+
+            if(pos_at > 0 && pos_dot > 3 && pos_dot < i) // @는 맨 앞이면 안됨 && .은 4번째~끝(i) 사이
+                break;
+            else {
+                printf("이메일 형식 -@-.- 에 맞지 않습니다!\n");
+                continue;
+            }
+        }
+        strncpy(email, str, EMAILlen-1);
+
+        if(checkEmail(email) == 1) { // DBManage.c
+            printf("입력한 %s는 이미 등록된 email입니다.\n", email);
+            printf("다른 email로 다시 입력하세요.\n\n");
             continue;
         }
-        for(i = 0; i < strsize; i++) { // 입력받은 이메일의 한 글자씩 확인하는 루프
-            if(i > 0 && str[i] == '@') // @는 맨 앞에 올 수 없음
-                pos_at = i+1;
-            if(i > pos_at && str[i] =='.') // .은 @+1 보다 뒤에 있음
-                pos_dot = i+1;
-        }
-
-        if(pos_at > 0 && pos_dot > 3 && pos_dot < i) // @는 맨 앞이면 안됨 && .은 4번째~끝(i) 사이
-            break;
         else {
-            printf("이메일 형식 -@-.- 에 맞지 않습니다!\n");
-            continue;
+            printf("그래서 %s이 가능합니다.\n", play);
+            break;
         }
     }
-    strncpy(email, str, EMAILlen-1);
 
     strncpy(I_date, str_now, DATElen);
 

@@ -348,7 +348,7 @@ int checkEmail(char email[]) { // 입력한 email을 매개변수로 받아 등�
         return 1;
     }
     else { // 등록되지 않은 email 임
-        printf("존재하지 않는 email입니다. 종료됩니다.\n");
+        printf("존재하지 않는 email입니다.\n");
         sqlite3_finalize(res);
         memset(sql_checkemail, '\0', SQLlen);
         sqlite3_close(db);

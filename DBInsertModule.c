@@ -81,28 +81,40 @@ int inAD_INFO() { // case 16
 
     puts("\nADMIN INFO insert");
 
-    while(1) { // id 필수로 입력받음
-        memset(id, '\0', IDlen);
-        memset(str, '\0', IDlen);
-        strsize = 0;
-        printf("\nID는 등록 후에 수정이 불가능합니다!!!\n");
-        printf("ID는 필수입력 정보입니다.\n");
-        puts("input id (5~9bytes 길이로 입력하세요):");
-        gets(str);
+    while(1) { // 유일한 id 값만 입력받음
+        while(1) { // id 필수로 입력받음
+            memset(id, '\0', IDlen);
+            memset(str, '\0', IDlen);
+            strsize = 0;
+            printf("\nID는 등록 후에 수정이 불가능합니다!!!\n");
+            printf("ID는 필수입력 정보입니다.\n");
+            puts("input id (5~9bytes 길이로 입력하세요):");
+            gets(str);
 
-        if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
-            continue;
-        strsize = strlen(str)+1;
-        if(strsize >= 6 && strsize <= IDlen) // id는 5~9bytes 길이 제한
-            break;
-        else if(strsize < 6) {
-            printf("5 btyes 보다 길게 입력하세요!\n");
+            if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
+                continue;
+            strsize = strlen(str)+1;
+            if(strsize >= 6 && strsize <= IDlen) // id는 5~9bytes 길이 제한
+                break;
+            else if(strsize < 6) {
+                printf("5 btyes 보다 길게 입력하세요!\n");
+                continue;
+            }
+            else
+                printBOF_gets(str, strsize, IDlen); // DBPrintModule.c
+        }
+        strncpy(id, str, IDlen-1);
+
+        if(checkID(id) == 1) { // DBManage.c
+            printf("입력한 %s는 이미 등록된 id입니다.\n", id);
+            printf("다른 id로 다시 입력하세요.\n\n");
             continue;
         }
-        else
-            printBOF_gets(str, strsize, IDlen); // DBPrintModule.c
+        else {
+            printf("그래서 %s이 가능합니다.\n", play);
+            break;
+        }
     }
-    strncpy(id, str, IDlen-1);
 
     while(1) { // access 입력받음
         memset(access, '\0', ACCESSlen);
@@ -233,39 +245,51 @@ int inAD_INFO() { // case 16
     }
     strncpy(birth, str, BIRTHlen-1);
 
-    while(1) { // 이메일 : @는 [1] ~ [끝-2] && .은 [@위치+2] ~ [끝]
-        memset(email, '\0', EMAILlen);
-        memset(str, '\0', EMAILlen);
-        strsize = 0;
-        printf("\n지금 입력하는 정보는 id, pwd 분실 시 확인 정보로 사용됩니다!!!\n");
-        printf("EMAIL은 수정이 가능합니다.\n");
-        printf("EMAIL은 필수 입력정보입니다..\n");
-        puts("input email (50bytes 보다 길면 다시 입력함):");
-        gets(str);
+    while(1) { // 유일한 값으로만 이메일 입력받음
+        while(1) { // 이메일 : @는 [1] ~ [끝-2] && .은 [@위치+2] ~ [끝]
+            memset(email, '\0', EMAILlen);
+            memset(str, '\0', EMAILlen);
+            strsize = 0;
+            printf("\n지금 입력하는 정보는 id, pwd 분실 시 확인 정보로 사용됩니다!!!\n");
+            printf("EMAIL은 수정이 가능합니다.\n");
+            printf("EMAIL은 필수 입력정보입니다..\n");
+            puts("input email (50bytes 보다 길면 다시 입력함):");
+            gets(str);
 
-        if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
-            continue;
-        strsize = strlen(str)+1;
-        if(strsize > EMAILlen) {
-            printBOF_gets(str, strsize, EMAILlen); // DBPrintModule.c
+            if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
+                continue;
+            strsize = strlen(str)+1;
+            if(strsize > EMAILlen) {
+                printBOF_gets(str, strsize, EMAILlen); // DBPrintModule.c
+                continue;
+            }
+
+            for(i = 0; i < strsize; i++) { // 입력받은 이메일의 한 글자씩 확인하는 루프
+                if(i > 0 && str[i] == '@') // @는 맨 앞에 올 수 없음
+                    pos_at = i+1;
+                if(i > pos_at && str[i] =='.') // .은 @+1 보다 뒤에 있음
+                    pos_dot = i+1;
+            }
+
+            if(pos_at > 0 && pos_dot > 3 && pos_dot < i) // @는 맨 앞이면 안됨 && .은 4번째~끝(i) 사이
+                break;
+            else {
+                printf("이메일 형식 -@-.- 에 맞지 않습니다!\n");
+                continue;
+            }
+        }
+        strncpy(email, str, EMAILlen-1);
+
+        if(checkEmail(email) == 1) { // DBManage.c
+            printf("입력한 %s는 이미 등록된 email입니다.\n", email);
+            printf("다른 email로 다시 입력하세요.\n\n");
             continue;
         }
-
-        for(i = 0; i < strsize; i++) { // 입력받은 이메일의 한 글자씩 확인하는 루프
-            if(i > 0 && str[i] == '@') // @는 맨 앞에 올 수 없음
-                pos_at = i+1;
-            if(i > pos_at && str[i] =='.') // .은 @+1 보다 뒤에 있음
-                pos_dot = i+1;
-        }
-
-        if(pos_at > 0 && pos_dot > 3 && pos_dot < i) // @는 맨 앞이면 안됨 && .은 4번째~끝(i) 사이
-            break;
         else {
-            printf("이메일 형식 -@-.- 에 맞지 않습니다!\n");
-            continue;
+            printf("그래서 %s이 가능합니다.\n", play);
+            break;
         }
     }
-    strncpy(email, str, EMAILlen-1);
 
     while(1) { // 전화번호는 자연수만 입력 가능
         memset(phone, '\0', PHONElen);
@@ -369,28 +393,40 @@ int inWL() { // case 17
 
     puts("WHITELIST TABLE's insert\n");
 
-    while(1) { // whitelist 필수로 입력받음
-        memset(whitelist, '\0', WLlen);
-        memset(str, '\0', WLlen);
-        strsize = 0;
-        printf("\nwhitelist는 등록 후에 수정이 불가능합니다!!!\n");
-        printf("whitelist는 필수입력 정보입니다.\n");
-        puts("input whitelist (3~30bytes 길이로 입력하세요.):");
-        gets(str);
+    while(1) { // 유일한 whitelist만 입력받음
+        while(1) { // whitelist 필수로 입력받음
+            memset(whitelist, '\0', WLlen);
+            memset(str, '\0', WLlen);
+            strsize = 0;
+            printf("\nwhitelist는 등록 후에 수정이 불가능합니다!!!\n");
+            printf("whitelist는 필수입력 정보입니다.\n");
+            puts("input whitelist (3~30bytes 길이로 입력하세요.):");
+            gets(str);
 
-        if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
-            continue;
-        strsize = strlen(str)+1;
-        if(strsize >=4 && strsize <= WLlen)
-            break;
-        else if(strsize < 4) {
-            printf("3 btyes 보다 길게 입력하세요!\n");
+            if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
+                continue;
+            strsize = strlen(str)+1;
+            if(strsize >=4 && strsize <= WLlen)
+                break;
+            else if(strsize < 4) {
+                printf("3 btyes 보다 길게 입력하세요!\n");
+                continue;
+            }
+            else
+                printBOF_gets(str, strsize, WLlen); // DBPrintModule.c
+        }
+        strncpy(whitelist, str, WLlen-1);
+
+        if(checkWL(whitelist) == 1) { // DBManage.c
+            printf("입력한 %s는 이미 등록된 whitelist입니다.\n", whitelist);
+            printf("다른 whitelist로 다시 입력하세요.\n\n");
             continue;
         }
-        else
-            printBOF_gets(str, strsize, WLlen); // DBPrintModule.c
+        else {
+            printf("그래서 %s이 가능합니다.\n", play);
+            break;
+        }
     }
-    strncpy(whitelist, str, WLlen-1);
 
     while(1) { // id 필수로 입력받음
         memset(id, '\0', IDlen);
