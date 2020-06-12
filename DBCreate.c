@@ -91,7 +91,8 @@ int createDB() {
     }
     else {
        	fprintf(stderr, "Created WHITELIST table successfully\n");
-        //system("mkdir -p backup"); // 백업 폴더를 1번만 생성
+        backup();
+        RestoreB();
     }
 
     sqlite3_close(db);
