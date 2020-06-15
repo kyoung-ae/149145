@@ -161,17 +161,30 @@ int upAD_INFO() { // case 26
         memset(access, '\0', ACCESSlen);
         memset(str, '\0', ACCESSlen);
         strsize = 0;
-        printf("수정을 건너띄려면 EnterKey만 누르세요.\n");
+        printf("\n수정을 건너띄려면 EnterKey만 누르세요.\n");
         puts("ACCESS(권한) 변경 값 입력:");
+        puts("input access (E, C, R):");
+        puts("E : EV3 ROBOT 관리자");
+        puts("C : CPS 관리자");
+        puts("R : ROOT");
+        puts("N : default 아직 권한 취득 전");
         gets(str);
 
-        str[0] == '\n'; // EnterKey를 누르면 무한푸프 탈출
-            break;
         strsize = strlen(str)+1;
-        if(strsize <= ACCESSlen)
-            break;
+        if(str[0] == 'E' || str[0] == 'C' || str[0] == 'R' || str[0] == 'N' || str[0] == '\0') {
+            if(str[0] == '\0') { // EnterKey를 누르면 무한푸프 탈출
+            str[0] = 'N';
+            }
+            if(strsize <= ACCESSlen)
+                break;
+        }
+        else
+            printf("잘못 입력하셨습니다.\n"); // 엔터키(N), E, C, R 을 제외하고는 무한루프
 
-        printBOF_gets(str, strsize, ACCESSlen); // DBPrintModule.c
+        if(strsize > ACCESSlen) {
+             printBOF_gets(str, strsize, ACCESSlen); // DBPrintModule.c
+        }
+
     }
     strncpy(access, str, ACCESSlen-1);
     //update admin set access = 'access' where access is not null and id = 'id'; // null이 아닌 access 값 수정
@@ -180,7 +193,7 @@ int upAD_INFO() { // case 26
         memset(pwd, '\0', PWDlen);
         memset(str, '\0', PWDlen);
         strsize = 0;
-        printf("수정을 건너띄려면 EnterKey만 누르세요.\n");
+        printf("\n수정을 건너띄려면 EnterKey만 누르세요.\n");
         puts("PWD(비밀번호) 변경 값 입력:");
         gets(str);
 
@@ -197,7 +210,8 @@ int upAD_INFO() { // case 26
     printf("admin 정보 수정을 위해 id와 pwd를 재확인합니다.\n");
     checkRep(id, play); // DBManage.c
 
-    if((strlen(access) != 0) && (strlen(pwd) == 0)) { // access만 수정
+    if((strlen(access) != 0) && (access == 'E' || access == 'C' ||
+            access == 'R' || access == 'N') && (strlen(pwd) == 0)) { // access만 수정
         memset(sql_upadinfo, '\0', SQLlen);
         strncpy(sql_upadinfo, "UPDATE ADMIN SET access = '", 27);
         strncat(sql_upadinfo, access, ACCESSlen-1);
@@ -246,7 +260,8 @@ int upAD_INFO() { // case 26
         memset(sql_upadinfo, '\0', SQLlen);
     }
 
-    if((strlen(access) != 0) && (strlen(pwd) != 0)) { // access & pwd 함께 수정
+    if((strlen(access) != 0)  && (access == 'E' || access == 'C' ||
+            access == 'R' || access == 'N') && (strlen(pwd) != 0)) { // access & pwd 함께 수정
         memset(sql_upadinfo, '\0', SQLlen);
         strncpy(sql_upadinfo, "UPDATE ADMIN SET (access, pwd) = ('", 35);
         strncat(sql_upadinfo, access, ACCESSlen-1);
@@ -293,7 +308,7 @@ int upAD_INFO() { // case 26
         memset(name, '\0', NAMElen);
         memset(str, '\0', NAMElen);
         strsize = 0;
-        printf("수정을 건너띄려면 EnterKey만 누르세요.\n");
+        printf("\n수정을 건너띄려면 EnterKey만 누르세요.\n");
         puts("NAME(이름) 변경 값 입력:");
         gets(str);
 
@@ -333,8 +348,8 @@ int upAD_INFO() { // case 26
         else {
             fprintf(stderr, "name 값을 %s로 수정 성공\n\n", name);
             backup(); // DBManage.c
-            if(checkAg(play) == 1) // DBManage.c
-                upAD_INFO();
+            //if(checkAg(play) == 1) // DBManage.c
+                //upAD_INFO();
         }
         memset(sql_upadinfo, '\0', SQLlen);
     }
@@ -357,7 +372,7 @@ int upAD_INFO() { // case 26
         memset(birth, '\0', BIRTHlen);
         memset(str, '\0', BIRTHlen);
         strsize = 0;
-        printf("수정을 건너띄려면 EnterKey만 누르세요.\n");
+        printf("\n수정을 건너띄려면 EnterKey만 누르세요.\n");
         puts("birth(생년월일 yyyymmdd 8개 날짜) 변경 값 입력:");
         gets(str);
 
@@ -400,8 +415,8 @@ int upAD_INFO() { // case 26
         else {
             fprintf(stderr, "birth 값을 %s로 수정 성공\n\n", birth);
             backup(); // DBManage.c
-            if(checkAg(play) == 1) // DBManage.c
-                upAD_INFO();
+            //if(checkAg(play) == 1) // DBManage.c
+                //upAD_INFO();
         }
         memset(sql_upadinfo, '\0', SQLlen);
     }
@@ -427,7 +442,7 @@ int upAD_INFO() { // case 26
             memset(email, '\0', EMAILlen);
             memset(str, '\0', EMAILlen);
             strsize = 0;
-            printf("수정을 건너띄려면 EnterKey만 누르세요.\n");
+            printf("\n수정을 건너띄려면 EnterKey만 누르세요.\n");
             puts("email 변경 값 입력:");
             gets(str);
 
@@ -487,8 +502,8 @@ int upAD_INFO() { // case 26
         else {
             fprintf(stderr, "email 값을 %s로 수정 성공\n\n", email);
             backup(); // DBManage.c
-            if(checkAg(play) == 1) // DBManage.c
-                upAD_INFO();
+            //if(checkAg(play) == 1) // DBManage.c
+                //upAD_INFO();
         }
         memset(sql_upadinfo, '\0', SQLlen);
     }
@@ -511,7 +526,7 @@ int upAD_INFO() { // case 26
         memset(phone, '\0', PHONElen);
         memset(str, '\0', PHONElen);
         strsize = 0;
-        printf("수정을 건너띄려면 EnterKey만 누르세요.\n");
+        printf("\n수정을 건너띄려면 EnterKey만 누르세요.\n");
         printf("수정을 원하면 2 ~ 20개의 수를 -표시 없이 입력하세요.\n");
         puts("phone(전화번호) 변경 값 입력:");
         gets(str);
@@ -566,6 +581,10 @@ int upAD_INFO() { // case 26
                 upAD_INFO();
         }
         memset(sql_upadinfo, '\0', SQLlen);
+    }
+    else {
+        if(checkAg(play) == 1) // DBManage.c
+            upAD_INFO();
     }
 
     sqlite3_close(db);

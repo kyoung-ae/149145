@@ -122,6 +122,7 @@ int inAD_INFO() { // case 16
         strsize = 0;
         printf("\nACCESS는 수정이 가능합니다.\n");
         puts("권한 취득 전이면 엔터키를 누르세요->기본 값(N)으로 등록됩니다.");
+        puts("ACCESS(권한) 변경 값 입력:");
         puts("input access (E, C, R):");
         puts("E : EV3 ROBOT 관리자");
         puts("C : CPS 관리자");
@@ -130,19 +131,20 @@ int inAD_INFO() { // case 16
         gets(str);
 
         strsize = strlen(str)+1;
-        if(strsize > ACCESSlen) {
-             printBOF_gets(str, strsize, ACCESSlen); // DBPrintModule.c
-             continue;
-        }
-
-        if(str[0] == 'E' || str[0] == 'C' || str[0] == 'R' || str[0] == 'N')
-            break;
-        if(str[0] == '\0') {
+        if(str[0] == 'E' || str[0] == 'C' || str[0] == 'R' || str[0] == 'N' || str[0] == '\0') {
+            if(str[0] == '\0') { // EnterKey를 누르면 무한푸프 탈출
             str[0] = 'N';
-            break;
+            }
+            if(strsize <= ACCESSlen)
+                break;
         }
         else
             printf("잘못 입력하셨습니다.\n"); // 엔터키(N), E, C, R 을 제외하고는 무한루프
+
+        if(strsize > ACCESSlen) {
+             printBOF_gets(str, strsize, ACCESSlen); // DBPrintModule.c
+        }
+
     }
     strncpy(access, str, ACCESSlen-1);
 
@@ -428,28 +430,34 @@ int inWL() { // case 17
         }
     }
 
-    while(1) { // id 필수로 입력받음
-        memset(id, '\0', IDlen);
-        memset(str, '\0', IDlen);
-        strsize = 0;
-        printf("\nID는 등록 후에 수정이 불가능합니다!!!\n");
-        printf("ID는 필수입력 정보입니다.\n");
-        puts("input id (5~9bytes 길이로 입력하세요):");
-        gets(str);
+    while(1) { // 임의로 생성한 id가 아닌 admin에 등록된 id로만 등록하는 무한루프
+        while(1) { // id 필수로 입력받음 // admin table에 등록된 id로만 등록이 가능
+            memset(id, '\0', IDlen);
+            memset(str, '\0', IDlen);
+            strsize = 0;
+            printf("\nID는 admin table에 등록된 id만 가능합니다.\n");
+            printf("나중에 지금 등록된 id가 아닌 다른 등록된 id로 수정이 가능합니다!!!\n");
+            printf("ID는 필수입력 정보입니다.\n");
+            puts("input id (5~9bytes 길이로 입력하세요):");
+            gets(str);
 
-        if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
-            continue;
-        strsize = strlen(str)+1;
-        if(strsize >= 6 && strsize <= IDlen) // id는 5~9bytes 길이 제한
-            break;
-        else if(strsize < 6) {
-            printf("5 btyes 보다 길게 입력하세요!\n");
-            continue;
+            if(str[0] == '\n' || str[0] == '\0') // 필수입력 정보여서 null 불가
+                continue;
+            strsize = strlen(str)+1;
+            if(strsize >= 6 && strsize <= IDlen) // id는 5~9bytes 길이 제한
+                break;
+            else if(strsize < 6) {
+                printf("5 btyes 보다 길게 입력하세요!\n");
+                continue;
+            }
+            else
+                printBOF_gets(str, strsize, IDlen); // DBPrintModule.c
         }
-        else
-            printBOF_gets(str, strsize, IDlen); // DBPrintModule.c
+        strncpy(id, str, IDlen-1);
+
+        if(checkID(id) == 1) // DBManage.c // admin에 등록된 id만 등록이 가능함
+            break;
     }
-    strncpy(id, str, IDlen-1);
 
     strncpy(W_date, str_now, DATElen);
 
