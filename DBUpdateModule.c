@@ -197,7 +197,7 @@ int upAD_INFO() { // case 26
         puts("PWD(비밀번호) 변경 값 입력:");
         gets(str);
 
-        str[0] == '\n'; // EnterKey를 누르면 무한푸프 탈출
+        if(str[0] == '\n') // EnterKey를 누르면 무한푸프 탈출
             break;
         strsize = strlen(str)+1;
         if(strsize <= PWDlen)
@@ -281,8 +281,8 @@ int upAD_INFO() { // case 26
         else {
             fprintf(stderr, "access 값은 %s로, pwd 값은 %s로 수정 성공\n\n", access, pwd);
             backup(); // DBManage.c
-            if(checkAg(play) == 1) // DBManage.c
-                upAD_INFO();
+            //if(checkAg(play) == 1) // DBManage.c
+                //upAD_INFO();
         }
         memset(sql_upadinfo, '\0', SQLlen);
     }
@@ -312,7 +312,7 @@ int upAD_INFO() { // case 26
         puts("NAME(이름) 변경 값 입력:");
         gets(str);
 
-        str[0] == '\n'; // EnterKey를 누르면 무한푸프 탈출
+        if(str[0] == '\n') // EnterKey를 누르면 무한푸프 탈출
             break;
         strsize = strlen(str)+1;
         if(strsize >= 3 && strsize <= NAMElen)
@@ -371,12 +371,13 @@ int upAD_INFO() { // case 26
     while(1) { // 수정하려는 id의 생년월일(yyyymmdd 8개의 유효 날짜) 수정
         memset(birth, '\0', BIRTHlen);
         memset(str, '\0', BIRTHlen);
+        b_date = 0;
         strsize = 0;
         printf("\n수정을 건너띄려면 EnterKey만 누르세요.\n");
         puts("birth(생년월일 yyyymmdd 8개 날짜) 변경 값 입력:");
         gets(str);
 
-        str[0] == '\0'; // EnterKey를 누르면 무한푸프 탈출
+        if(str[0] == '\0') // EnterKey를 누르면 무한푸프 탈출
             break;
         strsize = strlen(str)+1;
         if(strsize == BIRTHlen) {

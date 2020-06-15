@@ -203,7 +203,7 @@ int inAD_INFO() { // case 16
         puts("input name (2~30bytes 길이로 입력하세요):");
         gets(str);
 
-        str[0] == '\n'; // EnterKey를 누르면 무한푸프 탈출
+        if(str[0] == '\n') // EnterKey를 누르면 무한푸프 탈출
             break;
         strsize = strlen(str)+1;
 
@@ -222,13 +222,14 @@ int inAD_INFO() { // case 16
         memset(birth, '\0', BIRTHlen);
         memset(str, '\0', BIRTHlen);
         strsize = 0;
+        b_date = 0;
         printf("\n지금 입력하는 정보는 id, pwd 분실 시 확인 정보로 사용됩니다!!!\n");
         printf("BIRTH는 수정이 가능합니다.\n");
         printf("등록을 건너띄려면 바로 EnterKey를 누르세요.\n");
         puts("input birth (yyyymmdd 8개 유효 날짜(숫자)가 아니면 다시 입력함):");
         gets(str);
 
-        str[0] == '\n'; // EnterKey를 누르면 무한푸프 탈출
+        if(str[0] == '\n') // EnterKey를 누르면 무한푸프 탈출
             break;
         strsize = strlen(str)+1;
 

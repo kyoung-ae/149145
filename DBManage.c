@@ -71,7 +71,7 @@ void backup() { // CPS.db 파일을 CPS_backup.db 파일로 복사(백업)
     //printf("지금까지의 작업이 백업됐습니다.\n");
     //printf("DB 시작화면으로 돌아갑니다.\n");
     //login(); // DBLogin.c
-    printf("지금까지의 DB 내용이 CPS_backup.db 파일로 백업됐습니다.\n");
+    printf("지금까지의 DB 내용이 CPS_backup.db 파일로 백업됐습니다.\n\n");
 }
 
 int checkDate(int date) { // 입력받은 날짜의 유효성 검사-> 1이면 유효한 날짜 (0이면 없는 날짜임)
